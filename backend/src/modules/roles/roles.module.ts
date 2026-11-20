@@ -1,0 +1,13 @@
+import { Module } from '@nestjs/common';
+import { PermissionsGuard } from '../../common/guards/permissions.guard.js';
+import { PrismaModule } from '../../prisma/prisma.module.js';
+import { RolesController } from './roles.controller.js';
+import { RolesService } from './roles.service.js';
+
+@Module({
+  imports: [PrismaModule],
+  controllers: [RolesController],
+  providers: [RolesService, PermissionsGuard],
+  exports: [RolesService],
+})
+export class RolesModule {}

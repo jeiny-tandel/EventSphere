@@ -9,24 +9,29 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
+import { PermissionsGuard } from '../../common/guards/permissions.guard.js';
+import { Permissions } from '../../common/decorators/permissions.decorator.js';
 import { UsersService } from './users.service.js';
-import { UpdateUserDto } from './dto/index.js';
+import { AssignRoleDto, UpdateUserDto } from './dto/index.js';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Permissions('users.view')
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
 
+  @Permissions('users.view')
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.findOne(id);
   }
 
+  @Permissions('users.update')
   @Patch(':id')
   updateUser(
     @Param('id', ParseUUIDPipe) id: string,
@@ -35,8 +40,18 @@ export class UsersController {
     return this.usersService.updateUser(id, updateUserDto);
   }
 
+  @Permissions('users.delete')
   @Delete(':id')
   removeUser(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.removeUser(id);
+  }
+
+  @Permissions('users.assign_role')
+  @Patch(':id/role')
+  assignRole(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() assignRoleDto: AssignRoleDto,
+  ) {
+    return this.usersService.assignRole(id, assignRoleDto);
   }
 }

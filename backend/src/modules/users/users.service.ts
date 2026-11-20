@@ -5,7 +5,11 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '../../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { CreateUserDto, UpdateUserDto } from './dto/index.js';
+import {
+  AssignRoleDto,
+  CreateUserDto,
+  UpdateUserDto,
+} from './dto/index.js';
 
 const userSelect = {
   id: true,
@@ -149,5 +153,34 @@ export class UsersService {
       data: { isActive: false },
       select: userSelect,
     });
+  }
+
+  async assignRole(id: string, assignRoleDto: AssignRoleDto) {
+    const roleId = assignRoleDto.roleId;
+    await this.findOne(id);
+
+    const role = await this.prisma.role.findUnique({
+      where: { id: roleId },
+    });
+
+    if (!role) {
+      throw new NotFoundException(`Role with ID '${roleId}' not found`);
+    }
+
+    try {
+      return await this.prisma.user.update({
+        where: { id },
+        data: { roleId },
+        select: userSelect,
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException(`User with ID '${id}' not found`);
+      }
+      throw error;
+    }
   }
 }
