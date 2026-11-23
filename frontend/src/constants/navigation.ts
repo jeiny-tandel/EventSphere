@@ -3,6 +3,7 @@ import {
   AppstoreOutlined,
   KeyOutlined,
   SafetyCertificateOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 import { ROUTES } from './routes.ts';
 
@@ -31,6 +32,13 @@ export const DASHBOARD_NAV_ITEMS: DashboardNavItem[] = [
     label: 'Overview',
     path: ROUTES.DASHBOARD,
     icon: createElement(AppstoreOutlined, { className: 'text-base' }),
+  },
+  {
+    key: 'users',
+    label: 'Users',
+    path: ROUTES.USERS,
+    icon: createElement(TeamOutlined, { className: 'text-base' }),
+    adminOnly: true,
   },
   {
     key: 'roles',

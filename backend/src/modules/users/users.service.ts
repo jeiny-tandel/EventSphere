@@ -9,6 +9,7 @@ import {
   AssignRoleDto,
   CreateUserDto,
   UpdateUserDto,
+  UpdateUserStatusDto,
 } from './dto/index.js';
 
 const userSelect = {
@@ -140,6 +141,29 @@ export class UsersService {
         throw new ConflictException(
           `User with email '${updateUserDto.email}' already exists`,
         );
+      }
+      throw error;
+    }
+  }
+
+  async updateUserStatus(
+    id: string,
+    updateUserStatusDto: UpdateUserStatusDto,
+  ) {
+    await this.findOne(id);
+
+    try {
+      return await this.prisma.user.update({
+        where: { id },
+        data: { isActive: updateUserStatusDto.isActive },
+        select: userSelect,
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException(`User with ID '${id}' not found`);
       }
       throw error;
     }
