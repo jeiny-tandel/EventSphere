@@ -1,37 +1,13 @@
-import { useState, type ReactElement, type ReactNode } from "react";
-import {
-  Link,
-  NavLink,
-  Outlet,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
-import {
-  AppstoreOutlined,
-  CloseOutlined,
-  LogoutOutlined,
-  MenuOutlined,
-} from "@ant-design/icons";
+import { useState, type ReactElement } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { LogoutOutlined, MenuOutlined } from "@ant-design/icons";
 import { Button } from "../components/common";
+import { DashboardSidebar } from "../components/layout";
+import { DASHBOARD_NAV_ITEMS } from "../constants/navigation.ts";
+import { isAdminUser } from "../constants/roles.ts";
 import { ROUTES } from "../constants/routes.ts";
 import { useAppDispatch, useAppSelector } from "../hooks/redux.ts";
 import { logoutUser } from "../store/slices/authSlice.ts";
-
-interface NavItem {
-  key: string;
-  label: string;
-  path: string;
-  icon: ReactNode;
-}
-
-const DASHBOARD_NAV_ITEMS: NavItem[] = [
-  {
-    key: "overview",
-    label: "Overview",
-    path: ROUTES.DASHBOARD,
-    icon: <AppstoreOutlined className="text-base" />,
-  },
-];
 
 export function DashboardLayout(): ReactElement {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -51,82 +27,26 @@ export function DashboardLayout(): ReactElement {
     return (first + last).toUpperCase() || "U";
   };
 
-  const currentNav = DASHBOARD_NAV_ITEMS.find(
+  const isAdmin = isAdminUser(user);
+
+  const visibleNavItems = DASHBOARD_NAV_ITEMS.filter(
+    (item) => !item.adminOnly || isAdmin,
+  );
+
+  const currentNav = visibleNavItems.find(
     (item) => item.path === location.pathname,
   );
+
   const sectionTitle = currentNav ? currentNav.label : "Dashboard";
 
   return (
     <div className="flex min-h-screen bg-dim-grey-50 text-dim-grey-900">
-      {/* Mobile Sidebar Overlay Backdrop */}
-      {mobileSidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs md:hidden"
-          onClick={() => setMobileSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-dim-grey-200 bg-white transition-transform duration-200 ease-in-out md:static md:translate-x-0 ${
-          mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        {/* Brand Header */}
-        <div className="flex h-16 items-center justify-between border-b border-dim-grey-200 px-6">
-          <Link to={ROUTES.DASHBOARD} className="flex items-center gap-2">
-            <span className="text-lg font-extrabold tracking-tight text-peach-fuzz-500 uppercase">
-              EventSphere
-            </span>
-            <span className="rounded-md bg-peach-fuzz-50 px-1.5 py-0.5 text-[10px] font-bold text-peach-fuzz-700 uppercase">
-              App
-            </span>
-          </Link>
-          <button
-            type="button"
-            className="rounded-lg p-1.5 text-dim-grey-500 hover:bg-dim-grey-100 md:hidden"
-            onClick={() => setMobileSidebarOpen(false)}
-            aria-label="Close sidebar"
-          >
-            <CloseOutlined />
-          </button>
-        </div>
-
-        {/* Sidebar Navigation */}
-        <nav className="flex-1 space-y-1 p-4">
-          <div className="px-3 pb-2 text-[11px] font-bold text-dim-grey-400 uppercase tracking-wider">
-            Menu
-          </div>
-          {DASHBOARD_NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.key}
-              to={item.path}
-              end
-              onClick={() => setMobileSidebarOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-peach-fuzz-500 text-white shadow-xs"
-                    : "text-dim-grey-600 hover:bg-dim-grey-100 hover:text-dim-grey-900"
-                }`
-              }
-            >
-              {item.icon}
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
-        </nav>
-
-        {/* Sidebar Footer with Public Site Link */}
-        <div className="border-t border-dim-grey-200 p-4">
-          <Link
-            to={ROUTES.HOME}
-            className="flex items-center justify-center gap-2 rounded-lg border border-dim-grey-200 px-3 py-2 text-xs font-medium text-dim-grey-600 transition-colors hover:bg-dim-grey-50 hover:text-dim-grey-900"
-          >
-            <span>&larr; Public Website</span>
-          </Link>
-        </div>
-      </aside>
+      {/* Sidebar Navigation */}
+      <DashboardSidebar
+        items={visibleNavItems}
+        isOpen={mobileSidebarOpen}
+        onClose={() => setMobileSidebarOpen(false)}
+      />
 
       {/* Main Body */}
       <div className="flex flex-1 flex-col overflow-hidden">

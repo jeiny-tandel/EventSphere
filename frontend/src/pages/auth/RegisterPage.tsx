@@ -1,13 +1,13 @@
 import type { ReactElement } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { message } from "antd";
-import { isAxiosError } from "axios";
 import { useFormik } from "formik";
 import { registerUser } from "../../api";
 import { Button, Card, Input } from "../../components/common";
 import { ROUTES } from "../../constants/routes.ts";
 import { registerValidationSchema } from "../../schemas/auth.schema.ts";
 import type { RegisterFormData, RegisterPayload } from "../../types";
+import { extractErrorMessage } from "../../utils/error.utils.ts";
 
 export function RegisterPage(): ReactElement {
   const navigate = useNavigate();
@@ -40,23 +40,9 @@ export function RegisterPage(): ReactElement {
         );
         navigate(ROUTES.LOGIN);
       } catch (error) {
-        let errorMessage = "Registration failed. Please try again.";
-
-        if (isAxiosError(error) && error.response?.data) {
-          const responseData = error.response.data as {
-            message?: string | string[];
-          };
-          if (typeof responseData.message === "string") {
-            errorMessage = responseData.message;
-          } else if (
-            Array.isArray(responseData.message) &&
-            responseData.message.length > 0
-          ) {
-            errorMessage = responseData.message.join(", ");
-          }
-        }
-
-        message.error(errorMessage);
+        message.error(
+          extractErrorMessage(error, "Registration failed. Please try again."),
+        );
       } finally {
         setSubmitting(false);
       }

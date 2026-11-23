@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
+import { LoadingScreen } from '../components/common';
 import { ROUTES } from '../constants/routes.ts';
 import { useAppSelector } from '../hooks/redux.ts';
 
@@ -9,11 +10,7 @@ export function PublicOnlyRoute(): ReactElement {
   );
 
   if (!isInitialized) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div>Loading...</div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (isAuthenticated) {

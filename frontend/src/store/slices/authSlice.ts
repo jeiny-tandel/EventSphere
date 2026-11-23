@@ -11,6 +11,7 @@ import {
   removeAccessToken,
   setAccessToken,
 } from '../../utils/token.utils.ts';
+import { extractErrorMessage } from '../../utils/error.utils.ts';
 
 export interface AuthState {
   user: UserProfile | null;
@@ -35,21 +36,6 @@ const initialState: AuthState = {
   error: null,
 };
 
-function extractErrorMessage(error: unknown, fallback: string): string {
-  if (isAxiosError(error) && error.response?.data) {
-    const data = error.response.data as { message?: string | string[] };
-    if (typeof data.message === 'string') {
-      return data.message;
-    }
-    if (Array.isArray(data.message) && data.message.length > 0) {
-      return data.message.join(', ');
-    }
-  }
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return fallback;
-}
 
 export const login = createAsyncThunk<
   AuthResponse,

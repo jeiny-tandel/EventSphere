@@ -1,15 +1,11 @@
+import type { RoleResponse } from './rbac.types.ts';
+
 export interface LoginCredentials {
   email: string;
   password: string;
 }
 
-export interface UserRole {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+export type UserRole = RoleResponse;
 
 export interface UserProfile {
   id: string;

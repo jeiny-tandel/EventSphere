@@ -6,10 +6,13 @@ import { PublicLayout } from '../layouts/PublicLayout.tsx';
 import { LoginPage } from '../pages/auth/LoginPage.tsx';
 import { RegisterPage } from '../pages/auth/RegisterPage.tsx';
 import { DashboardOverviewPage } from '../pages/dashboard/DashboardOverviewPage.tsx';
+import { RolesPage } from '../pages/dashboard/roles/RolesPage.tsx';
+import { PermissionsPage } from '../pages/dashboard/permissions/PermissionsPage.tsx';
 import { NotFoundPage } from '../pages/NotFoundPage.tsx';
 import { AboutPage } from '../pages/public/AboutPage.tsx';
 import { EventsPage } from '../pages/public/EventsPage.tsx';
 import { HomePage } from '../pages/public/HomePage.tsx';
+import { AdminRoute } from './AdminRoute.tsx';
 import { ProtectedRoute } from './ProtectedRoute.tsx';
 import { PublicOnlyRoute } from './PublicOnlyRoute.tsx';
 
@@ -28,6 +31,12 @@ export function AppRouter(): ReactElement {
         <Route element={<ProtectedRoute />}>
           <Route path={ROUTES.DASHBOARD} element={<DashboardLayout />}>
             <Route index element={<DashboardOverviewPage />} />
+
+            {/* Admin-Only Management Routes */}
+            <Route element={<AdminRoute />}>
+              <Route path={ROUTES.ROLES} element={<RolesPage />} />
+              <Route path={ROUTES.PERMISSIONS} element={<PermissionsPage />} />
+            </Route>
           </Route>
         </Route>
 

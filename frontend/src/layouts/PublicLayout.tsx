@@ -1,17 +1,7 @@
 import type { ReactElement } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { ROUTES } from '../constants/routes.ts';
-
-interface NavItem {
-  label: string;
-  path: string;
-}
-
-const PUBLIC_NAV_ITEMS: NavItem[] = [
-  { label: 'Home', path: ROUTES.HOME },
-  { label: 'Events', path: ROUTES.EVENTS },
-  { label: 'About', path: ROUTES.ABOUT },
-];
+import { PUBLIC_NAV_ITEMS } from '../constants/navigation.ts';
 
 export function PublicLayout(): ReactElement {
   return (

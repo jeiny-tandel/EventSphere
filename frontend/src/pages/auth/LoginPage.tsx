@@ -13,6 +13,7 @@ import { useAppDispatch } from '../../hooks/redux.ts';
 import { loginValidationSchema } from '../../schemas/auth.schema.ts';
 import { login } from '../../store/slices/authSlice.ts';
 import type { LoginCredentials } from '../../types';
+import { extractErrorMessage } from '../../utils/error.utils.ts';
 
 interface LocationState {
   from?: Location;
@@ -47,9 +48,10 @@ export function LoginPage(): ReactElement {
         navigate(redirectDestination, { replace: true });
       } catch (error) {
         message.error(
-          typeof error === 'string'
-            ? error
-            : 'Login failed. Please check your credentials and try again.',
+          extractErrorMessage(
+            error,
+            'Login failed. Please check your credentials and try again.',
+          ),
         );
       } finally {
         setSubmitting(false);
