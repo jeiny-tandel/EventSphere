@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --color-peach-fuzz-50: #ffeee5;
+  --color-peach-fuzz-100: #ffdecc;
+  --color-peach-fuzz-200: #ffbd99;
+  --color-peach-fuzz-300: #ff9c66;
+  --color-peach-fuzz-400: #ff7a33;
+  --color-peach-fuzz-500: #ff5900;
+  --color-peach-fuzz-600: #cc4700;
+  --color-peach-fuzz-700: #993600;
+  --color-peach-fuzz-800: #662400;
+  --color-peach-fuzz-900: #331200;
+  --color-peach-fuzz-950: #240c00;
+
+  --color-powder-blush-50: #ffebe5;
+  --color-powder-blush-100: #ffd6cc;
+  --color-powder-blush-200: #ffad99;
+  --color-powder-blush-300: #ff8566;
+  --color-powder-blush-400: #ff5c33;
+  --color-powder-blush-500: #ff3300;
+  --color-powder-blush-600: #cc2900;
+  --color-powder-blush-700: #991f00;
+  --color-powder-blush-800: #661400;
+  --color-powder-blush-900: #330a00;
+  --color-powder-blush-950: #240700;
+
+  --color-cotton-candy-50: #faebeb;
+  --color-cotton-candy-100: #f5d6d7;
+  --color-cotton-candy-200: #ebadaf;
+  --color-cotton-candy-300: #e08588;
+  --color-cotton-candy-400: #d65c60;
+  --color-cotton-candy-500: #cc3338;
+  --color-cotton-candy-600: #a3292d;
+  --color-cotton-candy-700: #7a1f22;
+  --color-cotton-candy-800: #521416;
+  --color-cotton-candy-900: #290a0b;
+  --color-cotton-candy-950: #1d0708;
+
+  --color-dusty-rose-50: #f5eff0;
+  --color-dusty-rose-100: #ecdfe2;
+  --color-dusty-rose-200: #d9bfc4;
+  --color-dusty-rose-300: #c69fa7;
+  --color-dusty-rose-400: #b3808a;
+  --color-dusty-rose-500: #9f606c;
+  --color-dusty-rose-600: #804d57;
+  --color-dusty-rose-700: #603941;
+  --color-dusty-rose-800: #40262b;
+  --color-dusty-rose-900: #201316;
+  --color-dusty-rose-950: #160d0f;
+
+  --color-dim-grey-50: #f2f1f3;
+  --color-dim-grey-100: #e5e4e7;
+  --color-dim-grey-200: #cbc9cf;
+  --color-dim-grey-300: #b1aeb7;
+  --color-dim-grey-400: #98939f;
+  --color-dim-grey-500: #7e7887;
+  --color-dim-grey-600: #65606c;
+  --color-dim-grey-700: #4b4851;
+  --color-dim-grey-800: #323036;
+  --color-dim-grey-900: #19181b;
+  --color-dim-grey-950: #121113;
+}
