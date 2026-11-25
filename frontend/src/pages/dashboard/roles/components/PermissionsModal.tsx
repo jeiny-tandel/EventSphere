@@ -30,11 +30,27 @@ export function PermissionsModal({
   onClose,
   onRetryFetchPermissions,
 }: PermissionsModalProps): ReactElement {
+  const isSystemRole = Boolean(
+    (role as { isSystem?: boolean } | null)?.isSystem,
+  );
+
+  const isProtectedPermission = (perm: Permission) => {
+    return isSystemRole && Boolean((perm as { isSystem?: boolean }).isSystem);
+  };
+
   const [selectedPermissionIds, setSelectedPermissionIds] =
     useState<string[]>(initialPermissionIds);
 
   const handleTogglePermission = (permissionId: string) => {
     if (isSaving) return;
+    const perm = permissions.find((p) => p.id === permissionId);
+    if (
+      perm &&
+      isProtectedPermission(perm) &&
+      selectedPermissionIds.includes(permissionId)
+    ) {
+      return;
+    }
     setSelectedPermissionIds((prev) =>
       prev.includes(permissionId)
         ? prev.filter((id) => id !== permissionId)
@@ -51,7 +67,13 @@ export function PermissionsModal({
 
     if (allSelected) {
       setSelectedPermissionIds((prev) =>
-        prev.filter((id) => !groupIds.includes(id)),
+        prev.filter(
+          (id) =>
+            !groupIds.includes(id) ||
+            groupPermissions.some(
+              (p) => p.id === id && isProtectedPermission(p),
+            ),
+        ),
       );
     } else {
       setSelectedPermissionIds((prev) => [
@@ -200,24 +222,33 @@ export function PermissionsModal({
                       const isInitiallyAssigned = initialPermissionIds.includes(
                         perm.id,
                       );
+                      const isProtected =
+                        isProtectedPermission(perm) && isChecked;
+                      const isPermDisabled = isSaving || isProtected;
 
                       return (
                         <div
                           key={perm.id}
                           className={`flex items-start gap-2.5 rounded-md border p-2.5 transition-colors ${
-                            isSaving
-                              ? "cursor-not-allowed opacity-70"
+                            isPermDisabled
+                              ? isProtected
+                                ? "cursor-default"
+                                : "cursor-not-allowed opacity-70"
                               : "cursor-pointer"
                           } ${
                             isChecked
                               ? "border-peach-fuzz-400 bg-peach-fuzz-50/50"
                               : "border-dim-grey-200 bg-white hover:border-dim-grey-300"
                           }`}
-                          onClick={() => handleTogglePermission(perm.id)}
+                          onClick={
+                            isProtected
+                              ? undefined
+                              : () => handleTogglePermission(perm.id)
+                          }
                         >
                           <Checkbox
                             checked={isChecked}
-                            disabled={isSaving}
+                            disabled={isPermDisabled}
                             onChange={() => handleTogglePermission(perm.id)}
                             onClick={(e) => e.stopPropagation()}
                             className="mt-0.5"
@@ -233,6 +264,14 @@ export function PermissionsModal({
                                   className="px-1 py-0 text-[10px] leading-4"
                                 >
                                   Assigned
+                                </Tag>
+                              )}
+                              {isProtected && (
+                                <Tag
+                                  color="purple"
+                                  className="px-1 py-0 text-[10px] leading-4"
+                                >
+                                  System
                                 </Tag>
                               )}
                             </div>

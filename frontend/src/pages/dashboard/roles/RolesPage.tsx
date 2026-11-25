@@ -17,6 +17,7 @@ import type {
   Role,
   UpdateRolePayload,
 } from "../../../types/rbac.types.ts";
+import { hasPermission } from "../../../utils/permission.utils.ts";
 import {
   PermissionsModal,
   RoleFormModal,
@@ -25,6 +26,7 @@ import {
 
 export function RolesPage(): ReactElement {
   const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
   const { roles, isLoading, isLoaded, error } = useAppSelector(
     (state) => state.roles,
   );
@@ -34,6 +36,11 @@ export function RolesPage(): ReactElement {
     isLoaded: isPermissionsLoaded,
     error: permissionsError,
   } = useAppSelector((state) => state.permissions);
+
+  const canCreate = hasPermission(user, "roles.create");
+  const canUpdate = hasPermission(user, "roles.update");
+  const canAssignPermissions = hasPermission(user, "roles.assign_permissions");
+  const canDelete = hasPermission(user, "roles.delete");
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
@@ -217,6 +224,9 @@ export function RolesPage(): ReactElement {
     onEdit: (role) => setEditingRole(role),
     onManagePermissions: handleOpenPermissionsModal,
     onDelete: handleDeleteRole,
+    canUpdate,
+    canAssignPermissions,
+    canDelete,
   });
 
   return (
@@ -225,14 +235,16 @@ export function RolesPage(): ReactElement {
         title="Roles Management"
         description="Manage application roles and their assigned permissions."
         actions={
-          <Button
-            type="primary"
-            className="flex! items-center gap-1.5"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            <PlusOutlined />
-            <span>Create Role</span>
-          </Button>
+          canCreate ? (
+            <Button
+              type="primary"
+              className="flex! items-center gap-1.5"
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              <PlusOutlined />
+              <span>Create Role</span>
+            </Button>
+          ) : undefined
         }
       />
 

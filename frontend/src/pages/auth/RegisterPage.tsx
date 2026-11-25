@@ -51,10 +51,19 @@ export function RegisterPage(): ReactElement {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-dim-grey-50 px-4 py-12">
-      <Card
-        className="w-full max-w-md rounded-2xl border border-dim-grey-200 bg-white shadow-sm"
-        bodyClassName="!p-8"
-      >
+      <div className="w-full max-w-md">
+        <div className="mb-4">
+          <Link
+            to={ROUTES.HOME}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-dim-grey-600 transition-colors hover:text-peach-fuzz-500"
+          >
+            &larr; Back to Home
+          </Link>
+        </div>
+        <Card
+          className="w-full rounded-2xl border border-dim-grey-200 bg-white shadow-sm"
+          bodyClassName="!p-8"
+        >
         {/* EventSphere Branding */}
         <div className="mb-8 text-center">
           <span className="text-base font-bold tracking-wider text-peach-fuzz-500 uppercase">
@@ -204,6 +213,7 @@ export function RegisterPage(): ReactElement {
           </Link>
         </div>
       </Card>
+      </div>
     </div>
   );
 }

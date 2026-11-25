@@ -9,14 +9,20 @@ export interface RoleTableActionCallbacks {
   onEdit: (role: Role) => void;
   onManagePermissions: (role: Role) => void;
   onDelete: (role: Role) => void;
+  canUpdate?: boolean;
+  canAssignPermissions?: boolean;
+  canDelete?: boolean;
 }
 
 export function getRoleTableColumns({
   onEdit,
   onManagePermissions,
   onDelete,
+  canUpdate = false,
+  canAssignPermissions = false,
+  canDelete = false,
 }: RoleTableActionCallbacks): ColumnsType<Role> {
-  return [
+  const columns: ColumnsType<Role> = [
     {
       title: 'Role Name',
       dataIndex: 'name',
@@ -63,34 +69,50 @@ export function getRoleTableColumns({
         </span>
       ),
     },
-    {
+  ];
+
+  if (canUpdate || canAssignPermissions || canDelete) {
+    columns.push({
       title: 'Actions',
       key: 'actions',
-      render: (_: unknown, record: Role) => (
-        <Space size="middle">
-          <Button
-            type="text"
-            className="flex! items-center gap-1 text-xs!"
-            onClick={() => onEdit(record)}
-          >
-            <EditOutlined /> Edit
-          </Button>
-          <Button
-            type="text"
-            className="flex! items-center gap-1 text-xs!"
-            onClick={() => onManagePermissions(record)}
-          >
-            <KeyOutlined /> Permissions
-          </Button>
-          <Button
-            type="text"
-            className="flex! items-center gap-1 text-xs!"
-            onClick={() => onDelete(record)}
-          >
-            <DeleteOutlined /> Delete
-          </Button>
-        </Space>
-      ),
-    },
-  ];
+      render: (_: unknown, record: Role) => {
+        const isSystem = Boolean((record as { isSystem?: boolean }).isSystem);
+        const canDeleteThisRole = canDelete && !isSystem;
+
+        return (
+          <Space size="middle">
+            {canUpdate && (
+              <Button
+                type="text"
+                className="flex! items-center gap-1 text-xs!"
+                onClick={() => onEdit(record)}
+              >
+                <EditOutlined /> Edit
+              </Button>
+            )}
+            {canAssignPermissions && (
+              <Button
+                type="text"
+                className="flex! items-center gap-1 text-xs!"
+                onClick={() => onManagePermissions(record)}
+              >
+                <KeyOutlined /> Permissions
+              </Button>
+            )}
+            {canDeleteThisRole && (
+              <Button
+                type="text"
+                className="flex! items-center gap-1 text-xs!"
+                onClick={() => onDelete(record)}
+              >
+                <DeleteOutlined /> Delete
+              </Button>
+            )}
+          </Space>
+        );
+      },
+    });
+  }
+
+  return columns;
 }

@@ -11,6 +11,7 @@ model Role {
   id          String           @id @default(uuid()) @db.Uuid
   name        String           @unique
   description String?
+  isSystem    Boolean          @default(false)
   createdAt   DateTime         @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime         @updatedAt @db.Timestamptz(6)
   users       User[]
@@ -29,15 +30,31 @@ model User {
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
 
-  role Role? @relation(fields: [roleId], references: [id])
+  role          Role?               @relation(fields: [roleId], references: [id])
+  events        Event[]
+  registrations EventRegistration[]
+}
+
+model PermissionCategory {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String       @unique
+  description String?
+  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(6)
+
+  permissions Permission[]
 }
 
 model Permission {
-  id          String           @id @default(uuid()) @db.Uuid
-  name        String           @unique
+  id          String             @id @default(uuid()) @db.Uuid
+  name        String             @unique
   description String?
-  createdAt   DateTime         @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime         @updatedAt @db.Timestamptz(6)
+  categoryId  String             @db.Uuid
+  isSystem    Boolean            @default(false)
+  createdAt   DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime           @updatedAt @db.Timestamptz(6)
+
+  category    PermissionCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   roles       RolePermission[]
 }
 
@@ -48,4 +65,61 @@ model RolePermission {
   permission   Permission @relation(fields: [permissionId], references: [id])
 
   @@id([roleId, permissionId])
+}
+
+model EventCategory {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  events Event[]
+}
+
+model Event {
+  id          String      @id @default(uuid()) @db.Uuid
+  title       String
+  description String
+  organizerId String      @db.Uuid
+  categoryId  String      @db.Uuid
+  location    String
+  startDate   DateTime    @db.Timestamptz(6)
+  endDate     DateTime    @db.Timestamptz(6)
+  capacity    Int?
+  status      EventStatus @default(DRAFT)
+  createdAt   DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime    @updatedAt @db.Timestamptz(6)
+
+  organizer     User                @relation(fields: [organizerId], references: [id])
+  category      EventCategory       @relation(fields: [categoryId], references: [id])
+  registrations EventRegistration[]
+}
+
+model EventRegistration {
+  id        String             @id @default(uuid()) @db.Uuid
+  userId    String             @db.Uuid
+  eventId   String             @db.Uuid
+  status    RegistrationStatus @default(PENDING)
+  createdAt DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime           @updatedAt @db.Timestamptz(6)
+
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+
+  @@index([userId])
+  @@index([eventId])
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
 }

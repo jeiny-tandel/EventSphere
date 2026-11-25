@@ -3,9 +3,10 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { LoadingScreen } from '../components/common';
 import { ROUTES } from '../constants/routes.ts';
 import { useAppSelector } from '../hooks/redux.ts';
+import { hasPermission } from '../utils/permission.utils.ts';
 
 export function PublicOnlyRoute(): ReactElement {
-  const { isAuthenticated, isInitialized } = useAppSelector(
+  const { isAuthenticated, isInitialized, user } = useAppSelector(
     (state) => state.auth,
   );
 
@@ -14,7 +15,10 @@ export function PublicOnlyRoute(): ReactElement {
   }
 
   if (isAuthenticated) {
-    return <Navigate to={ROUTES.DASHBOARD} replace />;
+    const destination = hasPermission(user, 'dashboard.access')
+      ? ROUTES.DASHBOARD
+      : ROUTES.EVENTS;
+    return <Navigate to={destination} replace />;
   }
 
   return <Outlet />;

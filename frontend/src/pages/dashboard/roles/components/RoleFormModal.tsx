@@ -16,6 +16,7 @@ export interface RoleFormModalProps {
   initialValues?: {
     name: string;
     description?: string | null;
+    isSystem?: boolean;
   };
   onSubmit: (values: { name: string; description?: string }) => Promise<void>;
   onClose: () => void;
@@ -29,6 +30,11 @@ export function RoleFormModal({
   onClose,
 }: RoleFormModalProps): ReactElement {
   const isEdit = mode === 'edit';
+  const isSystemRole =
+    isEdit &&
+    Boolean(
+      (initialValues as { isSystem?: boolean } | undefined)?.isSystem,
+    );
   const validationSchema = isEdit
     ? editRoleValidationSchema
     : createRoleValidationSchema;
@@ -42,7 +48,9 @@ export function RoleFormModal({
     validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        const trimmedName = values.name.trim();
+        const trimmedName = isSystemRole
+          ? (initialValues?.name ?? '').trim()
+          : values.name.trim();
         const trimmedDescription = values.description?.trim();
 
         await onSubmit({
@@ -100,21 +108,29 @@ export function RoleFormModal({
         className="space-y-4 py-2"
         noValidate
       >
-        <Input
-          id={isEdit ? 'edit-name' : 'name'}
-          name="name"
-          label="Role Name"
-          placeholder="Enter role name"
-          value={formik.values.name}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          error={
-            formik.touched.name && formik.errors.name
-              ? formik.errors.name
-              : undefined
-          }
-          required
-        />
+        <div>
+          <Input
+            id={isEdit ? 'edit-name' : 'name'}
+            name="name"
+            label="Role Name"
+            placeholder="Enter role name"
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            disabled={formik.isSubmitting || isSystemRole}
+            error={
+              formik.touched.name && formik.errors.name
+                ? formik.errors.name
+                : undefined
+            }
+            required
+          />
+          {isSystemRole && (
+            <p className="mt-1 text-xs text-dim-grey-500">
+              System role names cannot be modified.
+            </p>
+          )}
+        </div>
 
         <TextArea
           id={isEdit ? 'edit-description' : 'description'}

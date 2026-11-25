@@ -6,6 +6,9 @@ export const ROUTES = {
   USERS: '/dashboard/users',
   ROLES: '/dashboard/roles',
   PERMISSIONS: '/dashboard/permissions',
+  EVENTS_MANAGEMENT: '/dashboard/events',
+  MY_REGISTRATIONS: '/my-registrations',
+  PROFILE: '/profile',
   EVENTS: '/events',
   ABOUT: '/about',
 } as const;

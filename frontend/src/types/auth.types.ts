@@ -18,6 +18,7 @@ export interface UserProfile {
   createdAt: string;
   updatedAt: string;
   role: UserRole | null;
+  permissions: string[];
 }
 
 export interface AuthResponse {

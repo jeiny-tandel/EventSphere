@@ -4,10 +4,10 @@ import { LogoutOutlined, MenuOutlined } from "@ant-design/icons";
 import { Button } from "../components/common";
 import { DashboardSidebar } from "../components/layout";
 import { DASHBOARD_NAV_ITEMS } from "../constants/navigation.ts";
-import { isAdminUser } from "../constants/roles.ts";
 import { ROUTES } from "../constants/routes.ts";
 import { useAppDispatch, useAppSelector } from "../hooks/redux.ts";
 import { logoutUser } from "../store/slices/authSlice.ts";
+import { hasPermission } from "../utils/permission.utils.ts";
 
 export function DashboardLayout(): ReactElement {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -27,10 +27,9 @@ export function DashboardLayout(): ReactElement {
     return (first + last).toUpperCase() || "U";
   };
 
-  const isAdmin = isAdminUser(user);
-
   const visibleNavItems = DASHBOARD_NAV_ITEMS.filter(
-    (item) => !item.adminOnly || isAdmin,
+    (item) =>
+      !item.requiredPermission || hasPermission(user, item.requiredPermission),
   );
 
   const currentNav = visibleNavItems.find(
@@ -40,7 +39,7 @@ export function DashboardLayout(): ReactElement {
   const sectionTitle = currentNav ? currentNav.label : "Dashboard";
 
   return (
-    <div className="flex min-h-screen bg-dim-grey-50 text-dim-grey-900">
+    <div className="flex h-screen overflow-hidden bg-dim-grey-50 text-dim-grey-900">
       {/* Sidebar Navigation */}
       <DashboardSidebar
         items={visibleNavItems}
@@ -49,9 +48,9 @@ export function DashboardLayout(): ReactElement {
       />
 
       {/* Main Body */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col h-full min-w-0 min-h-0 overflow-hidden">
         {/* Top Navigation Bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-dim-grey-200 bg-white/95 px-4 backdrop-blur-sm sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-dim-grey-200 bg-white/95 px-4 backdrop-blur-sm sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -96,7 +95,7 @@ export function DashboardLayout(): ReactElement {
         </header>
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="mx-auto max-w-7xl">
             <Outlet />
           </div>

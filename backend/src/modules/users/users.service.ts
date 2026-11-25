@@ -25,9 +25,80 @@ const userSelect = {
   role: true,
 };
 
+const userRolePermissionsInclude = {
+  role: {
+    include: {
+      permissions: {
+        include: {
+          permission: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  },
+} as const;
+
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private formatUser(user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string | null;
+    roleId: string | null;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    role: {
+      id: string;
+      name: string;
+      description: string | null;
+      isSystem: boolean;
+      createdAt: Date;
+      updatedAt: Date;
+      permissions?: Array<{
+        permission: {
+          name: string;
+        };
+      }>;
+    } | null;
+  }) {
+    const { role } = user;
+
+    const permissions =
+      role?.permissions?.map((rp) => rp.permission.name) ?? [];
+
+    const formattedRole = role
+      ? {
+          id: role.id,
+          name: role.name,
+          description: role.description,
+          isSystem: role.isSystem,
+          createdAt: role.createdAt,
+          updatedAt: role.updatedAt,
+        }
+      : null;
+
+    return {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      roleId: user.roleId,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      role: formattedRole,
+      permissions,
+    };
+  }
 
   async createUser(createUserDto: CreateUserDto, passwordHash: string) {
     const existingUser = await this.prisma.user.findUnique({
@@ -73,23 +144,30 @@ export class UsersService {
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      select: userSelect,
+      include: userRolePermissionsInclude,
     });
 
     if (!user) {
       throw new NotFoundException(`User with ID '${id}' not found`);
     }
 
-    return user;
+    return this.formatUser(user);
   }
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { email },
-      include: {
-        role: true,
-      },
+      include: userRolePermissionsInclude,
     });
+
+    if (!user) {
+      return null;
+    }
+
+    return {
+      ...this.formatUser(user),
+      passwordHash: user.passwordHash,
+    };
   }
 
   async updateUser(id: string, updateUserDto: UpdateUserDto) {

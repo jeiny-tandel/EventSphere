@@ -8,13 +8,17 @@ import { formatDate } from '../../../../utils/date.utils.ts';
 export interface PermissionTableActionCallbacks {
   onEdit: (permission: Permission) => void;
   onDelete: (permission: Permission) => void;
+  canUpdate?: boolean;
+  canDelete?: boolean;
 }
 
 export function getPermissionTableColumns({
   onEdit,
   onDelete,
+  canUpdate = false,
+  canDelete = false,
 }: PermissionTableActionCallbacks): ColumnsType<Permission> {
-  return [
+  const columns: ColumnsType<Permission> = [
     {
       title: 'Permission Name',
       dataIndex: 'name',
@@ -24,6 +28,20 @@ export function getPermissionTableColumns({
           {name}
         </Tag>
       ),
+    },
+    {
+      title: 'Category',
+      key: 'category',
+      render: (_: unknown, record: Permission) => {
+        const categoryName = record.category?.name;
+        return categoryName ? (
+          <Tag color="purple" className="font-medium">
+            {categoryName}
+          </Tag>
+        ) : (
+          <span className="italic text-dim-grey-400">—</span>
+        );
+      },
     },
     {
       title: 'Description',
@@ -46,28 +64,41 @@ export function getPermissionTableColumns({
         </span>
       ),
     },
-    {
+  ];
+
+  if (canUpdate || canDelete) {
+    columns.push({
       title: 'Actions',
       key: 'actions',
-      render: (_: unknown, record: Permission) => (
-        <Space size="middle">
-          <Button
-            type="text"
-            className="flex! items-center gap-1 text-xs!"
-            onClick={() => onEdit(record)}
-          >
-            <EditOutlined /> Edit
-          </Button>
-          <Button
-            type="text"
-            danger
-            className="flex! items-center gap-1 text-xs!"
-            onClick={() => onDelete(record)}
-          >
-            <DeleteOutlined /> Delete
-          </Button>
-        </Space>
-      ),
-    },
-  ];
+      render: (_: unknown, record: Permission) => {
+        const isSystem = Boolean((record as { isSystem?: boolean }).isSystem);
+        const canDeleteThisPermission = canDelete && !isSystem;
+
+        return (
+          <Space size="middle">
+            {canUpdate && (
+              <Button
+                type="text"
+                className="flex! items-center gap-1 text-xs!"
+                onClick={() => onEdit(record)}
+              >
+                <EditOutlined /> Edit
+              </Button>
+            )}
+            {canDeleteThisPermission && (
+              <Button
+                type="text"
+                className="flex! items-center gap-1 text-xs! text-red-600! hover:text-red-700!"
+                onClick={() => onDelete(record)}
+              >
+                <DeleteOutlined /> Delete
+              </Button>
+            )}
+          </Space>
+        );
+      },
+    });
+  }
+
+  return columns;
 }

@@ -1,6 +1,7 @@
 import { createElement, type ReactNode } from 'react';
 import {
   AppstoreOutlined,
+  CalendarOutlined,
   KeyOutlined,
   SafetyCertificateOutlined,
   TeamOutlined,
@@ -17,7 +18,7 @@ export interface DashboardNavItem {
   label: string;
   path: string;
   icon: ReactNode;
-  adminOnly?: boolean;
+  requiredPermission?: string;
 }
 
 export const PUBLIC_NAV_ITEMS: PublicNavItem[] = [
@@ -32,26 +33,34 @@ export const DASHBOARD_NAV_ITEMS: DashboardNavItem[] = [
     label: 'Overview',
     path: ROUTES.DASHBOARD,
     icon: createElement(AppstoreOutlined, { className: 'text-base' }),
+    requiredPermission: 'dashboard.access',
+  },
+  {
+    key: 'events',
+    label: 'Events',
+    path: ROUTES.EVENTS_MANAGEMENT,
+    icon: createElement(CalendarOutlined, { className: 'text-base' }),
+    requiredPermission: 'events.view',
   },
   {
     key: 'users',
     label: 'Users',
     path: ROUTES.USERS,
     icon: createElement(TeamOutlined, { className: 'text-base' }),
-    adminOnly: true,
+    requiredPermission: 'users.view',
   },
   {
     key: 'roles',
     label: 'Roles',
     path: ROUTES.ROLES,
     icon: createElement(SafetyCertificateOutlined, { className: 'text-base' }),
-    adminOnly: true,
+    requiredPermission: 'roles.view',
   },
   {
     key: 'permissions',
     label: 'Permissions',
     path: ROUTES.PERMISSIONS,
     icon: createElement(KeyOutlined, { className: 'text-base' }),
-    adminOnly: true,
+    requiredPermission: 'permissions.view',
   },
 ];

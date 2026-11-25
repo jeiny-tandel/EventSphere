@@ -12,6 +12,7 @@ import {
 } from "../../../store/slices/userSlice.ts";
 import type { UpdateUserPayload, User } from "../../../types/user.types.ts";
 import { extractErrorMessage } from "../../../utils/error.utils.ts";
+import { hasPermission } from "../../../utils/permission.utils.ts";
 import {
   AssignRoleModal,
   UserFormModal,
@@ -22,6 +23,7 @@ type StatusFilter = "all" | "active" | "inactive";
 
 export function UsersPage(): ReactElement {
   const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
   const { users, isLoading, isLoaded, isSubmitting, error } = useAppSelector(
     (state) => state.user,
   );
@@ -30,6 +32,9 @@ export function UsersPage(): ReactElement {
     isLoading: isLoadingRoles,
     isLoaded: isRolesLoaded,
   } = useAppSelector((state) => state.roles);
+
+  const canUpdate = hasPermission(user, "users.update");
+  const canAssignRole = hasPermission(user, "users.assign_role");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -214,6 +219,8 @@ export function UsersPage(): ReactElement {
     onAssignRole: handleOpenAssignRoleModal,
     onActivate: handleActivateUser,
     onDeactivate: handleDeactivateUser,
+    canUpdate,
+    canAssignRole,
   });
 
   const isFiltered = Boolean(searchTerm.trim()) || statusFilter !== "all";

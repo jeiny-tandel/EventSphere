@@ -12,11 +12,38 @@ import { ROUTES } from '../../constants/routes.ts';
 import { useAppDispatch } from '../../hooks/redux.ts';
 import { loginValidationSchema } from '../../schemas/auth.schema.ts';
 import { login } from '../../store/slices/authSlice.ts';
-import type { LoginCredentials } from '../../types';
+import type { LoginCredentials, UserProfile } from '../../types';
 import { extractErrorMessage } from '../../utils/error.utils.ts';
+import { hasPermission } from '../../utils/permission.utils.ts';
 
 interface LocationState {
   from?: Location;
+}
+
+function getRedirectDestination(
+  user: UserProfile | null | undefined,
+  fromLocation?: Location,
+): string {
+  const hasDashboardAccess = hasPermission(user, 'dashboard.access');
+  const defaultDestination = hasDashboardAccess ? ROUTES.DASHBOARD : ROUTES.EVENTS;
+
+  if (
+    fromLocation?.pathname &&
+    fromLocation.pathname.startsWith('/') &&
+    !fromLocation.pathname.startsWith('//') &&
+    fromLocation.pathname !== ROUTES.LOGIN &&
+    fromLocation.pathname !== ROUTES.REGISTER
+  ) {
+    const isManagementRoute =
+      fromLocation.pathname === ROUTES.DASHBOARD ||
+      fromLocation.pathname.startsWith(`${ROUTES.DASHBOARD}/`);
+
+    if (hasDashboardAccess || !isManagementRoute) {
+      return `${fromLocation.pathname}${fromLocation.search || ''}${fromLocation.hash || ''}`;
+    }
+  }
+
+  return defaultDestination;
 }
 
 export function LoginPage(): ReactElement {
@@ -27,15 +54,6 @@ export function LoginPage(): ReactElement {
   const state = location.state as LocationState | null;
   const fromLocation = state?.from;
 
-  let redirectDestination: string = ROUTES.DASHBOARD;
-  if (
-    fromLocation?.pathname &&
-    fromLocation.pathname.startsWith('/') &&
-    !fromLocation.pathname.startsWith('//')
-  ) {
-    redirectDestination = `${fromLocation.pathname}${fromLocation.search || ''}${fromLocation.hash || ''}`;
-  }
-
   const formik = useFormik<LoginCredentials>({
     initialValues: {
       email: '',
@@ -44,8 +62,12 @@ export function LoginPage(): ReactElement {
     validationSchema: loginValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        await dispatch(login(values)).unwrap();
-        navigate(redirectDestination, { replace: true });
+        const authResponse = await dispatch(login(values)).unwrap();
+        const destination = getRedirectDestination(
+          authResponse.user,
+          fromLocation,
+        );
+        navigate(destination, { replace: true });
       } catch (error) {
         message.error(
           extractErrorMessage(
@@ -61,10 +83,19 @@ export function LoginPage(): ReactElement {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-dim-grey-50 px-4 py-12">
-      <Card
-        className="w-full max-w-md rounded-2xl border border-dim-grey-200 bg-white shadow-sm"
-        bodyClassName="!p-8"
-      >
+      <div className="w-full max-w-md">
+        <div className="mb-4">
+          <Link
+            to={ROUTES.HOME}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-dim-grey-600 transition-colors hover:text-peach-fuzz-500"
+          >
+            &larr; Back to Home
+          </Link>
+        </div>
+        <Card
+          className="w-full rounded-2xl border border-dim-grey-200 bg-white shadow-sm"
+          bodyClassName="!p-8"
+        >
         {/* EventSphere Branding */}
         <div className="mb-8 text-center">
           <span className="text-base font-bold tracking-wider text-peach-fuzz-500 uppercase">
@@ -142,6 +173,7 @@ export function LoginPage(): ReactElement {
           </Link>
         </div>
       </Card>
+      </div>
     </div>
   );
 }

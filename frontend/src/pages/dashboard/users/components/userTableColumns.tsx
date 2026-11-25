@@ -15,6 +15,8 @@ export interface UserTableActionCallbacks {
   onAssignRole: (user: User) => void;
   onActivate: (user: User) => void;
   onDeactivate: (user: User) => void;
+  canUpdate?: boolean;
+  canAssignRole?: boolean;
 }
 
 export function getUserTableColumns({
@@ -22,8 +24,10 @@ export function getUserTableColumns({
   onAssignRole,
   onActivate,
   onDeactivate,
+  canUpdate = false,
+  canAssignRole = false,
 }: UserTableActionCallbacks): ColumnsType<User> {
-  return [
+  const columns: ColumnsType<User> = [
     {
       title: 'Name',
       key: 'name',
@@ -90,44 +94,54 @@ export function getUserTableColumns({
         </span>
       ),
     },
-    {
+  ];
+
+  if (canUpdate || canAssignRole) {
+    columns.push({
       title: 'Actions',
       key: 'actions',
       render: (_: unknown, record: User) => (
         <Space size="middle">
-          <Button
-            type="text"
-            className="flex! items-center gap-1 text-xs!"
-            onClick={() => onEdit(record)}
-          >
-            <EditOutlined /> Edit
-          </Button>
-          <Button
-            type="text"
-            className="flex! items-center gap-1 text-xs!"
-            onClick={() => onAssignRole(record)}
-          >
-            <SafetyCertificateOutlined /> Assign Role
-          </Button>
-          {record.isActive ? (
+          {canUpdate && (
             <Button
               type="text"
               className="flex! items-center gap-1 text-xs!"
-              onClick={() => onDeactivate(record)}
+              onClick={() => onEdit(record)}
             >
-              <StopOutlined /> Deactivate
-            </Button>
-          ) : (
-            <Button
-              type="text"
-              className="flex! items-center gap-1 text-xs!"
-              onClick={() => onActivate(record)}
-            >
-              <CheckCircleOutlined /> Activate
+              <EditOutlined /> Edit
             </Button>
           )}
+          {canAssignRole && (
+            <Button
+              type="text"
+              className="flex! items-center gap-1 text-xs!"
+              onClick={() => onAssignRole(record)}
+            >
+              <SafetyCertificateOutlined /> Assign Role
+            </Button>
+          )}
+          {canUpdate &&
+            (record.isActive ? (
+              <Button
+                type="text"
+                className="flex! items-center gap-1 text-xs!"
+                onClick={() => onDeactivate(record)}
+              >
+                <StopOutlined /> Deactivate
+              </Button>
+            ) : (
+              <Button
+                type="text"
+                className="flex! items-center gap-1 text-xs!"
+                onClick={() => onActivate(record)}
+              >
+                <CheckCircleOutlined /> Activate
+              </Button>
+            ))}
         </Space>
       ),
-    },
-  ];
+    });
+  }
+
+  return columns;
 }

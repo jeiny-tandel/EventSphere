@@ -7,3 +7,13 @@ export {
   getPermissionTableColumns,
   type PermissionTableActionCallbacks,
 } from './permissionTableColumns.tsx';
+export {
+  PermissionCategoryFormModal,
+  type PermissionCategoryFormModalProps,
+  type PermissionCategoryFormMode,
+} from './PermissionCategoryFormModal.tsx';
+export {
+  getPermissionCategoryTableColumns,
+  type PermissionCategoryTableActionCallbacks,
+} from './permissionCategoryTableColumns.tsx';
+

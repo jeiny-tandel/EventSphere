@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -65,7 +66,17 @@ export class RolesService {
   }
 
   async update(id: string, updateRoleDto: UpdateRoleDto) {
-    await this.findOne(id);
+    const role = await this.findOne(id);
+
+    if (
+      role.isSystem &&
+      updateRoleDto.name !== undefined &&
+      updateRoleDto.name.trim() !== role.name.trim()
+    ) {
+      throw new ForbiddenException(
+        `System role '${role.name}' cannot be renamed`,
+      );
+    }
 
     const data: {
       name?: string;
@@ -103,7 +114,13 @@ export class RolesService {
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    const role = await this.findOne(id);
+
+    if (role.isSystem) {
+      throw new ForbiddenException(
+        `System role '${role.name}' cannot be deleted`,
+      );
+    }
 
     try {
       return await this.prisma.role.delete({
@@ -185,7 +202,7 @@ export class RolesService {
         where: {
           id: { in: uniquePermissionIds },
         },
-        select: { id: true },
+        select: { id: true, name: true, isSystem: true },
       });
 
       if (existingPermissions.length !== uniquePermissionIds.length) {
@@ -196,6 +213,18 @@ export class RolesService {
         throw new NotFoundException(
           `The following permission ID(s) do not exist: ${missingIds.join(', ')}`,
         );
+      }
+
+      if (role.isSystem) {
+        const systemPermissions = existingPermissions.filter((p) => p.isSystem);
+        if (systemPermissions.length > 0) {
+          const prohibitedNames = systemPermissions
+            .map((p) => `'${p.name}'`)
+            .join(', ');
+          throw new ForbiddenException(
+            `Cannot remove system permission(s) from system role '${role.name}': ${prohibitedNames}`,
+          );
+        }
       }
 
       await tx.rolePermission.deleteMany({

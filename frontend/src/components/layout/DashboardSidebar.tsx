@@ -27,12 +27,12 @@ export function DashboardSidebar({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-dim-grey-200 bg-white transition-transform duration-200 ease-in-out md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-full w-64 shrink-0 flex-col border-r border-dim-grey-200 bg-white transition-transform duration-200 ease-in-out md:static md:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Brand Header */}
-        <div className="flex h-16 items-center justify-between border-b border-dim-grey-200 px-6">
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-dim-grey-200 px-6">
           <Link to={ROUTES.DASHBOARD} className="flex items-center gap-2">
             <span className="text-lg font-extrabold tracking-tight text-peach-fuzz-500 uppercase">
               EventSphere
@@ -52,7 +52,7 @@ export function DashboardSidebar({
         </div>
 
         {/* Sidebar Navigation */}
-        <nav className="flex-1 space-y-1 p-4">
+        <nav className="flex-1 space-y-1 overflow-y-auto p-4 min-h-0">
           <div className="px-3 pb-2 text-[11px] font-bold text-dim-grey-400 uppercase tracking-wider">
             Menu
           </div>
@@ -77,7 +77,7 @@ export function DashboardSidebar({
         </nav>
 
         {/* Sidebar Footer with Public Site Link */}
-        <div className="border-t border-dim-grey-200 p-4">
+        <div className="shrink-0 border-t border-dim-grey-200 p-4">
           <Link
             to={ROUTES.HOME}
             className="flex items-center justify-center gap-2 rounded-lg border border-dim-grey-200 px-3 py-2 text-xs font-medium text-dim-grey-600 transition-colors hover:bg-dim-grey-50 hover:text-dim-grey-900"
