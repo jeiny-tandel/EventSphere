@@ -44,6 +44,21 @@ export async function deleteEvent(id: string): Promise<Event> {
   return response.data;
 }
 
+export async function uploadEventCoverImage(
+  id: string,
+  file: File,
+): Promise<Event> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await api.post<Event>(`/events/${id}/cover`, formData);
+  return response.data;
+}
+
+export async function deleteEventCoverImage(id: string): Promise<Event> {
+  const response = await api.delete<Event>(`/events/${id}/cover`);
+  return response.data;
+}
+
 // Event Category APIs
 export async function getEventCategories(): Promise<EventCategory[]> {
   const response = await api.get<EventCategory[]>('/event-categories');

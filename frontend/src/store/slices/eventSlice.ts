@@ -8,12 +8,14 @@ import {
   createEventCategory as apiCreateEventCategory,
   deleteEvent as apiDeleteEvent,
   deleteEventCategory as apiDeleteEventCategory,
+  deleteEventCoverImage as apiDeleteEventCoverImage,
   getEventById as apiGetEventById,
   getEventCategories as apiGetEventCategories,
   getEvents as apiGetEvents,
   getManagementEvents as apiGetManagementEvents,
   updateEvent as apiUpdateEvent,
   updateEventCategory as apiUpdateEventCategory,
+  uploadEventCoverImage as apiUploadEventCoverImage,
 } from '../../api/events.api.ts';
 import type {
   CreateEventCategoryPayload,
@@ -141,6 +143,34 @@ export const deleteEvent = createAsyncThunk<
   } catch (error) {
     return rejectWithValue(
       extractErrorMessage(error, 'Failed to delete event.'),
+    );
+  }
+});
+
+export const uploadEventCoverImage = createAsyncThunk<
+  Event,
+  { id: string; file: File },
+  { rejectValue: string }
+>('events/uploadEventCoverImage', async ({ id, file }, { rejectWithValue }) => {
+  try {
+    return await apiUploadEventCoverImage(id, file);
+  } catch (error) {
+    return rejectWithValue(
+      extractErrorMessage(error, 'Failed to upload event cover image.'),
+    );
+  }
+});
+
+export const deleteEventCoverImage = createAsyncThunk<
+  Event,
+  string,
+  { rejectValue: string }
+>('events/deleteEventCoverImage', async (id, { rejectWithValue }) => {
+  try {
+    return await apiDeleteEventCoverImage(id);
+  } catch (error) {
+    return rejectWithValue(
+      extractErrorMessage(error, 'Failed to delete event cover image.'),
     );
   }
 });
@@ -367,6 +397,84 @@ export const eventSlice = createSlice({
       .addCase(deleteEvent.rejected, (state, action) => {
         state.isSubmitting = false;
         state.error = action.payload ?? 'Failed to delete event.';
+      });
+
+    // uploadEventCoverImage
+    builder
+      .addCase(uploadEventCoverImage.pending, (state) => {
+        state.isSubmitting = true;
+        state.error = null;
+      })
+      .addCase(
+        uploadEventCoverImage.fulfilled,
+        (state, action: PayloadAction<Event>) => {
+          state.isSubmitting = false;
+          state.managementEvents = state.managementEvents.map((event) =>
+            event.id === action.payload.id ? action.payload : event,
+          );
+          if (state.selectedEvent?.id === action.payload.id) {
+            state.selectedEvent = action.payload;
+          }
+
+          const publicIndex = state.events.findIndex(
+            (event) => event.id === action.payload.id,
+          );
+
+          if (publicIndex !== -1) {
+            if (action.payload.status === 'PUBLISHED') {
+              state.events[publicIndex] = action.payload;
+            } else {
+              state.events.splice(publicIndex, 1);
+            }
+            state.isLoaded = false;
+          } else if (action.payload.status === 'PUBLISHED') {
+            state.isLoaded = false;
+          }
+        },
+      )
+      .addCase(uploadEventCoverImage.rejected, (state, action) => {
+        state.isSubmitting = false;
+        state.error =
+          action.payload ?? 'Failed to upload event cover image.';
+      });
+
+    // deleteEventCoverImage
+    builder
+      .addCase(deleteEventCoverImage.pending, (state) => {
+        state.isSubmitting = true;
+        state.error = null;
+      })
+      .addCase(
+        deleteEventCoverImage.fulfilled,
+        (state, action: PayloadAction<Event>) => {
+          state.isSubmitting = false;
+          state.managementEvents = state.managementEvents.map((event) =>
+            event.id === action.payload.id ? action.payload : event,
+          );
+          if (state.selectedEvent?.id === action.payload.id) {
+            state.selectedEvent = action.payload;
+          }
+
+          const publicIndex = state.events.findIndex(
+            (event) => event.id === action.payload.id,
+          );
+
+          if (publicIndex !== -1) {
+            if (action.payload.status === 'PUBLISHED') {
+              state.events[publicIndex] = action.payload;
+            } else {
+              state.events.splice(publicIndex, 1);
+            }
+            state.isLoaded = false;
+          } else if (action.payload.status === 'PUBLISHED') {
+            state.isLoaded = false;
+          }
+        },
+      )
+      .addCase(deleteEventCoverImage.rejected, (state, action) => {
+        state.isSubmitting = false;
+        state.error =
+          action.payload ?? 'Failed to delete event cover image.';
       });
 
     // fetchEventCategories

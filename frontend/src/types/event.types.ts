@@ -25,6 +25,7 @@ export interface Event {
   startDate: string;
   endDate: string;
   capacity: number | null;
+  coverImage: string | null;
   status: EventStatus;
   createdAt: string;
   updatedAt: string;

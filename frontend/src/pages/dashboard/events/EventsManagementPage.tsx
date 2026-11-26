@@ -5,6 +5,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   ExclamationCircleOutlined,
+  PictureOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
 import { Button, Card, PageHeader } from "../../../components/common";
@@ -23,6 +24,7 @@ import type {
 import { isAdminUser } from "../../../constants/roles.ts";
 import { formatDate } from "../../../utils/date.utils.ts";
 import { extractErrorMessage } from "../../../utils/error.utils.ts";
+import { getEventCoverImageUrl } from "../../../utils/event-image.utils.ts";
 import { hasPermission } from "../../../utils/permission.utils.ts";
 import { CategoryFormModal, EventFormModal } from "./components";
 
@@ -178,16 +180,35 @@ export function EventsManagementPage(): ReactElement {
       title: "Event Title",
       dataIndex: "title",
       key: "title",
-      render: (title: string, record: Event) => (
-        <div>
-          <span className="font-semibold text-dim-grey-900">{title}</span>
-          {record.description && (
-            <p className="line-clamp-1 text-xs text-dim-grey-500">
-              {record.description}
-            </p>
-          )}
-        </div>
-      ),
+      render: (title: string, record: Event) => {
+        const coverImageUrl = getEventCoverImageUrl(record.coverImage);
+
+        return (
+          <div className="flex items-center gap-3">
+            <div className="aspect-video h-8 w-14 shrink-0 overflow-hidden rounded-md border border-dim-grey-200 bg-dim-grey-100">
+              {coverImageUrl ? (
+                <img
+                  src={coverImageUrl}
+                  alt={title}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-dim-grey-400">
+                  <PictureOutlined className="text-sm" />
+                </div>
+              )}
+            </div>
+            <div className="min-w-0">
+              <span className="font-semibold text-dim-grey-900">{title}</span>
+              {record.description && (
+                <p className="line-clamp-1 text-xs text-dim-grey-500">
+                  {record.description}
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      },
     },
     {
       title: "Category",
@@ -249,9 +270,7 @@ export function EventsManagementPage(): ReactElement {
       dataIndex: "endDate",
       key: "endDate",
       render: (endDate: string) => (
-        <span className="text-xs text-dim-grey-600">
-          {formatDate(endDate)}
-        </span>
+        <span className="text-xs text-dim-grey-600">{formatDate(endDate)}</span>
       ),
     },
     {

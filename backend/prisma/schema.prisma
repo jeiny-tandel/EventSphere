@@ -87,6 +87,7 @@ model Event {
   startDate   DateTime    @db.Timestamptz(6)
   endDate     DateTime    @db.Timestamptz(6)
   capacity    Int?
+  coverImage  String?
   status      EventStatus @default(DRAFT)
   createdAt   DateTime    @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime    @updatedAt @db.Timestamptz(6)

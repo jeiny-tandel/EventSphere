@@ -1,30 +1,32 @@
-import { useEffect, useMemo, useState, type ReactElement } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Alert, Empty, Spin, Tag, message } from 'antd';
+import { useEffect, useMemo, useState, type ReactElement } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Alert, Empty, Spin, Tag, message } from "antd";
 import {
   CalendarOutlined,
   CheckCircleOutlined,
   EnvironmentOutlined,
+  PictureOutlined,
   UserOutlined,
-} from '@ant-design/icons';
-import { Button, Card } from '../../components/common';
-import { ROUTES } from '../../constants/routes.ts';
-import { useAppDispatch, useAppSelector } from '../../hooks/redux.ts';
-import { fetchEvents } from '../../store/slices/eventSlice.ts';
+} from "@ant-design/icons";
+import { Button, Card } from "../../components/common";
+import { ROUTES } from "../../constants/routes.ts";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux.ts";
+import { fetchEvents } from "../../store/slices/eventSlice.ts";
 import {
   fetchMyRegistrations,
   registerForEventThunk,
-} from '../../store/slices/registrationSlice.ts';
-import type { Event, EventStatus } from '../../types/event.types.ts';
-import type { RegistrationStatus } from '../../types/registration.types.ts';
-import { formatDate } from '../../utils/date.utils.ts';
-import { extractErrorMessage } from '../../utils/error.utils.ts';
+} from "../../store/slices/registrationSlice.ts";
+import type { Event, EventStatus } from "../../types/event.types.ts";
+import type { RegistrationStatus } from "../../types/registration.types.ts";
+import { formatDate } from "../../utils/date.utils.ts";
+import { extractErrorMessage } from "../../utils/error.utils.ts";
+import { getEventCoverImageUrl } from "../../utils/event-image.utils.ts";
 
 const STATUS_CONFIG: Record<EventStatus, { color: string; label: string }> = {
-  DRAFT: { color: 'default', label: 'Draft' },
-  PUBLISHED: { color: 'success', label: 'Published' },
-  CANCELLED: { color: 'error', label: 'Cancelled' },
-  COMPLETED: { color: 'blue', label: 'Completed' },
+  DRAFT: { color: "default", label: "Draft" },
+  PUBLISHED: { color: "success", label: "Published" },
+  CANCELLED: { color: "error", label: "Cancelled" },
+  COMPLETED: { color: "blue", label: "Completed" },
 };
 
 export function EventsPage(): ReactElement {
@@ -51,7 +53,7 @@ export function EventsPage(): ReactElement {
   }, [dispatch, isAuthenticated]);
 
   const publishedEvents = useMemo(
-    () => events.filter((event) => event.status === 'PUBLISHED'),
+    () => events.filter((event) => event.status === "PUBLISHED"),
     [events],
   );
 
@@ -63,7 +65,7 @@ export function EventsPage(): ReactElement {
       if (reg.userId && reg.userId !== user.id) continue;
 
       const existingStatus = map.get(reg.eventId);
-      if (reg.status === 'CONFIRMED' || reg.status === 'PENDING') {
+      if (reg.status === "CONFIRMED" || reg.status === "PENDING") {
         map.set(reg.eventId, reg.status);
       } else if (!existingStatus) {
         map.set(reg.eventId, reg.status);
@@ -76,7 +78,7 @@ export function EventsPage(): ReactElement {
     if (registeringEventId) return;
 
     if (!isAuthenticated) {
-      message.info('Please log in to register for an event.');
+      message.info("Please log in to register for an event.");
       navigate(ROUTES.LOGIN, { state: { from: location } });
       return;
     }
@@ -88,14 +90,16 @@ export function EventsPage(): ReactElement {
     } catch (err) {
       const errorMessage = extractErrorMessage(
         err,
-        'Failed to register for the event. Please try again.',
+        "Failed to register for the event. Please try again.",
       );
       const lower = errorMessage.toLowerCase();
-      if (lower.includes('already have an active registration')) {
-        message.warning('You already have an active registration for this event.');
-      } else if (lower.includes('capacity')) {
+      if (lower.includes("already have an active registration")) {
+        message.warning(
+          "You already have an active registration for this event.",
+        );
+      } else if (lower.includes("capacity")) {
         message.error(
-          'This event has reached maximum capacity. No seats are currently available.',
+          "This event has reached maximum capacity. No seats are currently available.",
         );
       } else {
         message.error(errorMessage);
@@ -171,101 +175,119 @@ export function EventsPage(): ReactElement {
             const organizerName = event.organizer
               ? [event.organizer.firstName, event.organizer.lastName]
                   .filter(Boolean)
-                  .join(' ')
+                  .join(" ")
                   .trim()
               : null;
             const regStatus = userRegistrationStatusMap.get(event.id);
             const isRegistered =
-              regStatus === 'PENDING' || regStatus === 'CONFIRMED';
+              regStatus === "PENDING" || regStatus === "CONFIRMED";
+            const coverImageUrl = getEventCoverImageUrl(event.coverImage);
 
             return (
               <Card
                 key={event.id}
-                className="flex flex-col justify-between rounded-xl border border-dim-grey-200 bg-white shadow-xs transition-shadow hover:shadow-md"
-                bodyClassName="!p-6 flex flex-col h-full"
+                className="flex flex-col justify-between rounded-xl border border-dim-grey-200 bg-white shadow-xs transition-shadow hover:shadow-md overflow-hidden"
+                bodyClassName="!p-0 flex flex-col h-full"
               >
-                <div>
-                  <div className="flex items-center justify-between gap-2">
-                    {event.category?.name ? (
-                      <span className="inline-block rounded-full bg-peach-fuzz-100 px-3 py-1 text-xs font-semibold text-peach-fuzz-700">
-                        {event.category.name}
-                      </span>
-                    ) : (
-                      <span className="inline-block rounded-full bg-dim-grey-100 px-3 py-1 text-xs font-medium text-dim-grey-600">
-                        Uncategorized
-                      </span>
-                    )}
-                    {statusConfig && (
-                      <Tag
-                        color={statusConfig.color}
-                        className="font-medium mr-0"
-                      >
-                        {statusConfig.label}
-                      </Tag>
-                    )}
-                  </div>
-
-                  <h2 className="mt-3 text-lg font-bold text-dim-grey-900 line-clamp-1">
-                    {event.title}
-                  </h2>
-
-                  <div className="mt-2 space-y-1 text-xs text-dim-grey-500">
-                    <p className="flex items-center gap-1.5">
-                      <CalendarOutlined className="text-peach-fuzz-500" />
-                      <span>
-                        {formatDate(event.startDate)}
-                        {event.endDate && event.endDate !== event.startDate
-                          ? ` – ${formatDate(event.endDate)}`
-                          : ''}
-                      </span>
-                    </p>
-                    <p className="flex items-center gap-1.5">
-                      <EnvironmentOutlined className="text-peach-fuzz-500" />
-                      <span className="truncate">
-                        {event.location || 'Location TBA'}
-                      </span>
-                    </p>
-                    {organizerName && (
-                      <p className="flex items-center gap-1.5">
-                        <UserOutlined className="text-peach-fuzz-500" />
-                        <span>Hosted by {organizerName}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  <p className="mt-3 text-sm text-dim-grey-600 line-clamp-3">
-                    {event.description}
-                  </p>
+                <div className="aspect-video w-full overflow-hidden bg-dim-grey-100">
+                  {coverImageUrl ? (
+                    <img
+                      src={coverImageUrl}
+                      alt={event.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-dim-grey-400">
+                      <PictureOutlined className="text-3xl" />
+                    </div>
+                  )}
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-dim-grey-100 flex items-center justify-between gap-3 text-xs text-dim-grey-500">
+                <div className="p-6 flex flex-col justify-between flex-1">
                   <div>
-                    {event.capacity !== null && event.capacity !== undefined ? (
-                      <span>Capacity: {event.capacity} seats</span>
+                    <div className="flex items-center justify-between gap-2">
+                      {event.category?.name ? (
+                        <span className="inline-block rounded-full bg-peach-fuzz-100 px-3 py-1 text-xs font-semibold text-peach-fuzz-700">
+                          {event.category.name}
+                        </span>
+                      ) : (
+                        <span className="inline-block rounded-full bg-dim-grey-100 px-3 py-1 text-xs font-medium text-dim-grey-600">
+                          Uncategorized
+                        </span>
+                      )}
+                      {statusConfig && (
+                        <Tag
+                          color={statusConfig.color}
+                          className="font-medium mr-0"
+                        >
+                          {statusConfig.label}
+                        </Tag>
+                      )}
+                    </div>
+
+                    <h2 className="mt-3 text-lg font-bold text-dim-grey-900 line-clamp-1">
+                      {event.title}
+                    </h2>
+
+                    <div className="mt-2 space-y-1 text-xs text-dim-grey-500">
+                      <p className="flex items-center gap-1.5">
+                        <CalendarOutlined className="text-peach-fuzz-500" />
+                        <span>
+                          {formatDate(event.startDate)}
+                          {event.endDate && event.endDate !== event.startDate
+                            ? ` – ${formatDate(event.endDate)}`
+                            : ""}
+                        </span>
+                      </p>
+                      <p className="flex items-center gap-1.5">
+                        <EnvironmentOutlined className="text-peach-fuzz-500" />
+                        <span className="truncate">
+                          {event.location || "Location TBA"}
+                        </span>
+                      </p>
+                      {organizerName && (
+                        <p className="flex items-center gap-1.5">
+                          <UserOutlined className="text-peach-fuzz-500" />
+                          <span>Hosted by {organizerName}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    <p className="mt-3 text-sm text-dim-grey-600 line-clamp-3">
+                      {event.description}
+                    </p>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-dim-grey-100 flex items-center justify-between gap-3 text-xs text-dim-grey-500">
+                    <div>
+                      {event.capacity !== null &&
+                      event.capacity !== undefined ? (
+                        <span>Capacity: {event.capacity} seats</span>
+                      ) : (
+                        <span>Open attendance</span>
+                      )}
+                    </div>
+                    {isRegistered ? (
+                      <Button
+                        type="default"
+                        disabled
+                        className="flex! items-center gap-1.5 text-xs! font-medium bg-dim-grey-100! text-dim-grey-500! border-dim-grey-200! cursor-not-allowed!"
+                      >
+                        <CheckCircleOutlined className="text-emerald-500 text-sm" />
+                        <span>Registered</span>
+                      </Button>
                     ) : (
-                      <span>Open attendance</span>
+                      <Button
+                        type="primary"
+                        className="flex! items-center text-xs!"
+                        loading={registeringEventId === event.id}
+                        disabled={registeringEventId !== null}
+                        onClick={() => handleRegister(event)}
+                      >
+                        Register
+                      </Button>
                     )}
                   </div>
-                  {isRegistered ? (
-                    <Button
-                      type="default"
-                      disabled
-                      className="flex! items-center gap-1.5 text-xs! font-medium bg-dim-grey-100! text-dim-grey-500! border-dim-grey-200! cursor-not-allowed!"
-                    >
-                      <CheckCircleOutlined className="text-emerald-500 text-sm" />
-                      <span>Registered</span>
-                    </Button>
-                  ) : (
-                    <Button
-                      type="primary"
-                      className="flex! items-center text-xs!"
-                      loading={registeringEventId === event.id}
-                      disabled={registeringEventId !== null}
-                      onClick={() => handleRegister(event)}
-                    >
-                      Register
-                    </Button>
-                  )}
                 </div>
               </Card>
             );
