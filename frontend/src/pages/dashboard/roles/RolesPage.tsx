@@ -3,6 +3,7 @@ import { Alert, Empty, Modal, Table, message } from "antd";
 import { ExclamationCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Card, PageHeader } from "../../../components/common";
 import { useAppDispatch, useAppSelector } from "../../../hooks/redux.ts";
+import { fetchProfile } from "../../../store/slices/authSlice.ts";
 import { fetchPermissions } from "../../../store/slices/permissionSlice.ts";
 import {
   assignPermissionsToRole,
@@ -17,7 +18,7 @@ import type {
   Role,
   UpdateRolePayload,
 } from "../../../types/rbac.types.ts";
-import { hasPermission } from "../../../utils/permission.utils.ts";
+import { hasPermission } from "../../../utils";
 import {
   PermissionsModal,
   RoleFormModal,
@@ -170,6 +171,11 @@ export function RolesPage(): ReactElement {
 
     setIsSavingPermissions(true);
     let additionsSucceeded = false;
+    let removalsSucceeded = false;
+    const currentUserRoleId = user?.roleId ?? user?.role?.id;
+    const isCurrentUserRole =
+      Boolean(currentUserRoleId) &&
+      selectedRoleForPermissions.id === currentUserRoleId;
 
     try {
       // 1. Dispatch assign permissions if toAdd is not empty
@@ -193,6 +199,7 @@ export function RolesPage(): ReactElement {
             payload: { permissionIds: toRemove },
           }),
         ).unwrap();
+        removalsSucceeded = true;
       }
 
       message.success(
@@ -216,6 +223,9 @@ export function RolesPage(): ReactElement {
         message.error(errorMessage);
       }
     } finally {
+      if (isCurrentUserRole && (additionsSucceeded || removalsSucceeded)) {
+        void dispatch(fetchProfile());
+      }
       setIsSavingPermissions(false);
     }
   };

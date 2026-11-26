@@ -6,8 +6,22 @@ import { HttpAdapterHost } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AllExceptionsFilter } from '../common/filters/all-exceptions.filter.js';
 
+function resolveBackendRoot(startDir: string): string {
+  let current = startDir;
+  while (true) {
+    if (existsSync(resolve(current, 'package.json'))) {
+      return current;
+    }
+    const parent = dirname(current);
+    if (parent === current) {
+      return resolve(startDir, '../..');
+    }
+    current = parent;
+  }
+}
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const backendRoot = resolve(__dirname, '../..');
+const backendRoot = resolveBackendRoot(__dirname);
 
 function resolveUploadDir(): string {
   const envDir = process.env.UPLOAD_DIR?.trim();

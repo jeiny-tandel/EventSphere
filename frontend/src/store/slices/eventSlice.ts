@@ -25,7 +25,7 @@ import type {
   UpdateEventCategoryPayload,
   UpdateEventPayload,
 } from '../../types/event.types.ts';
-import { extractErrorMessage } from '../../utils/error.utils.ts';
+import { extractErrorMessage } from '../../utils';
 import { authSlice } from './authSlice.ts';
 
 const { logout } = authSlice.actions;
@@ -573,7 +573,14 @@ export const eventSlice = createSlice({
       });
 
     // reset state on logout
-    builder.addCase(logout, () => initialState);
+    builder.addCase(logout, (state) => {
+      state.managementEvents = [];
+      state.isManagementLoading = false;
+      state.isManagementLoaded = false;
+      state.selectedEvent = null;
+      state.isSubmitting = false;
+      state.error = null;
+    });
   },
 });
 

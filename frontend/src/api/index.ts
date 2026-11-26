@@ -1,4 +1,5 @@
 export * from './auth.api';
+export * from './dashboard.api';
 export * from './events.api';
 export * from './registrations.api';
 export * from './roles.api';

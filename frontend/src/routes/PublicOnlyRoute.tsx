@@ -3,7 +3,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { LoadingScreen } from '../components/common';
 import { ROUTES } from '../constants/routes.ts';
 import { useAppSelector } from '../hooks/redux.ts';
-import { hasPermission } from '../utils/permission.utils.ts';
+import { hasPermission } from '../utils';
 
 export function PublicOnlyRoute(): ReactElement {
   const { isAuthenticated, isInitialized, user } = useAppSelector(

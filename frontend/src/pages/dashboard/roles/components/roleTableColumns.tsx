@@ -3,7 +3,7 @@ import { Space, Tag } from 'antd';
 import { DeleteOutlined, EditOutlined, KeyOutlined } from '@ant-design/icons';
 import { Button } from '../../../../components/common';
 import type { Role } from '../../../../types/rbac.types.ts';
-import { formatDate } from '../../../../utils/date.utils.ts';
+import { formatDate } from '../../../../utils';
 
 export interface RoleTableActionCallbacks {
   onEdit: (role: Role) => void;

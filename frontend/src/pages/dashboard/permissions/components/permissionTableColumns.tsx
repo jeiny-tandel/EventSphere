@@ -3,7 +3,7 @@ import { Space, Tag } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Button } from '../../../../components/common';
 import type { Permission } from '../../../../types/rbac.types.ts';
-import { formatDate } from '../../../../utils/date.utils.ts';
+import { formatDate } from '../../../../utils';
 
 export interface PermissionTableActionCallbacks {
   onEdit: (permission: Permission) => void;
@@ -71,9 +71,6 @@ export function getPermissionTableColumns({
       title: 'Actions',
       key: 'actions',
       render: (_: unknown, record: Permission) => {
-        const isSystem = Boolean((record as { isSystem?: boolean }).isSystem);
-        const canDeleteThisPermission = canDelete && !isSystem;
-
         return (
           <Space size="middle">
             {canUpdate && (
@@ -85,7 +82,7 @@ export function getPermissionTableColumns({
                 <EditOutlined /> Edit
               </Button>
             )}
-            {canDeleteThisPermission && (
+            {canDelete && (
               <Button
                 type="text"
                 className="flex! items-center gap-1 text-xs! text-red-600! hover:text-red-700!"

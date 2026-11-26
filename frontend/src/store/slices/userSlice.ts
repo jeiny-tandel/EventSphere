@@ -17,7 +17,7 @@ import type {
   UpdateUserStatusPayload,
   User,
 } from '../../types/user.types.ts';
-import { extractErrorMessage } from '../../utils/error.utils.ts';
+import { extractErrorMessage } from '../../utils';
 import { authSlice } from './authSlice.ts';
 
 const { logout } = authSlice.actions;

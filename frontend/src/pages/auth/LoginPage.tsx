@@ -13,8 +13,7 @@ import { useAppDispatch } from '../../hooks/redux.ts';
 import { loginValidationSchema } from '../../schemas/auth.schema.ts';
 import { login } from '../../store/slices/authSlice.ts';
 import type { LoginCredentials, UserProfile } from '../../types';
-import { extractErrorMessage } from '../../utils/error.utils.ts';
-import { hasPermission } from '../../utils/permission.utils.ts';
+import { extractErrorMessage, hasPermission } from '../../utils';
 
 interface LocationState {
   from?: Location;

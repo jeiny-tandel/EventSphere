@@ -2,7 +2,7 @@ import { useEffect, type ReactElement } from 'react';
 import { useAppDispatch } from './hooks/redux.ts';
 import { AppRouter } from './routes/AppRouter.tsx';
 import { fetchProfile, setAuthInitialized } from './store/slices/authSlice.ts';
-import { getAccessToken } from './utils/token.utils.ts';
+import { getAccessToken } from './utils';
 
 function App(): ReactElement {
   const dispatch = useAppDispatch();

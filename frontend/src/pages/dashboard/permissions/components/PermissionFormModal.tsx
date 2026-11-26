@@ -8,7 +8,7 @@ import {
   type PermissionFormValues,
 } from '../../../../schemas/permissions.schema.ts';
 import type { PermissionCategory } from '../../../../types/rbac.types.ts';
-import { extractErrorMessage } from '../../../../utils/error.utils.ts';
+import { extractErrorMessage } from '../../../../utils';
 
 export type PermissionFormMode = 'create' | 'edit';
 
@@ -40,11 +40,6 @@ export function PermissionFormModal({
   isSubmitting = false,
 }: PermissionFormModalProps): ReactElement {
   const isEdit = mode === 'edit';
-  const isSystemPermission =
-    isEdit &&
-    Boolean(
-      (initialValues as { isSystem?: boolean } | undefined)?.isSystem,
-    );
 
   const [categories, setCategories] = useState<PermissionCategory[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
@@ -117,9 +112,7 @@ export function PermissionFormModal({
     validationSchema: permissionValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        const trimmedName = isSystemPermission
-          ? (initialValues?.name ?? '').trim()
-          : values.name.trim();
+        const trimmedName = values.name.trim();
         const trimmedDescription = values.description?.trim();
         const trimmedCategoryId = values.categoryId.trim();
 
@@ -190,7 +183,7 @@ export function PermissionFormModal({
             value={formik.values.name}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            disabled={submitting || isSystemPermission}
+            disabled={submitting}
             error={
               formik.touched.name && formik.errors.name
                 ? formik.errors.name
@@ -198,11 +191,6 @@ export function PermissionFormModal({
             }
             required
           />
-          {isSystemPermission && (
-            <p className="mt-1 text-xs text-dim-grey-500">
-              System permission names cannot be modified.
-            </p>
-          )}
         </div>
 
         <div className="flex flex-col gap-1.5">

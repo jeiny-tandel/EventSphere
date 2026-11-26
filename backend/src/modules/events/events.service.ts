@@ -50,7 +50,7 @@ export class EventsService {
     }
 
     try {
-      return await this.prisma.event.create({
+      const createdEvent = await (this.prisma.event as any).create({
         data: {
           title: createEventDto.title,
           description: createEventDto.description,
@@ -60,10 +60,18 @@ export class EventsService {
           startDate: new Date(createEventDto.startDate),
           endDate: new Date(createEventDto.endDate),
           capacity: createEventDto.capacity,
+          ...(createEventDto.price !== undefined && {
+            price: createEventDto.price,
+          }),
+          ...(createEventDto.maxTicketsPerUser !== undefined && {
+            maxTicketsPerUser: createEventDto.maxTicketsPerUser,
+          }),
           status: createEventDto.status ?? EventStatus.DRAFT,
         },
         include: eventInclude,
       });
+
+      return this.formatEventWithAvailability(createdEvent, 0);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2003') {
@@ -76,14 +84,81 @@ export class EventsService {
     }
   }
 
+  private formatEventWithAvailability<
+    T extends { capacity: number | null; price?: unknown },
+  >(event: T, registeredCount: number) {
+    const remainingSeats =
+      event.capacity !== null && event.capacity !== undefined
+        ? Math.max(0, event.capacity - registeredCount)
+        : null;
+    const isSoldOut =
+      event.capacity !== null &&
+      event.capacity !== undefined &&
+      registeredCount >= event.capacity;
+
+    return {
+      ...event,
+      price: Number(event.price ?? 0),
+      registeredCount,
+      remainingSeats,
+      isSoldOut,
+    };
+  }
+
+  private async getActiveTicketCount(eventId: string): Promise<number> {
+    const aggregate = await (this.prisma as any).eventRegistration.aggregate({
+      where: {
+        eventId,
+        status: { in: ['PENDING', 'CONFIRMED'] },
+      },
+      _sum: { quantity: true },
+    });
+
+    return aggregate._sum?.quantity ?? 0;
+  }
+
+  private async enrichEventsWithAvailability<
+    T extends { id: string; capacity: number | null; price?: unknown },
+  >(events: T[]) {
+    if (events.length === 0) {
+      return [];
+    }
+
+    const eventIds = events.map((event) => event.id);
+    const groupedCounts: Array<{
+      eventId: string;
+      _sum?: { quantity?: number | null };
+    }> = await (this.prisma as any).eventRegistration.groupBy({
+      by: ['eventId'],
+      where: {
+        eventId: { in: eventIds },
+        status: { in: ['PENDING', 'CONFIRMED'] },
+      },
+      _sum: { quantity: true },
+    });
+
+    const countByEventId = new Map<string, number>(
+      groupedCounts.map((row) => [row.eventId, row._sum?.quantity ?? 0]),
+    );
+
+    return events.map((event) =>
+      this.formatEventWithAvailability(
+        event,
+        countByEventId.get(event.id) ?? 0,
+      ),
+    );
+  }
+
   async findAll() {
-    return this.prisma.event.findMany({
+    const events = await this.prisma.event.findMany({
       where: {
         status: EventStatus.PUBLISHED,
       },
       include: eventInclude,
       orderBy: { createdAt: 'desc' },
     });
+
+    return this.enrichEventsWithAvailability(events);
   }
 
   async findManagementEvents(currentUserId: string) {
@@ -102,11 +177,13 @@ export class EventsService {
       ? {}
       : { organizerId: currentUserId };
 
-    return this.prisma.event.findMany({
+    const events = await this.prisma.event.findMany({
       where,
       include: eventInclude,
       orderBy: { createdAt: 'desc' },
     });
+
+    return this.enrichEventsWithAvailability(events);
   }
 
   async findOne(id: string) {
@@ -119,7 +196,8 @@ export class EventsService {
       throw new NotFoundException(`Event with ID '${id}' not found`);
     }
 
-    return event;
+    const registeredCount = await this.getActiveTicketCount(id);
+    return this.formatEventWithAvailability(event, registeredCount);
   }
 
   private async validateEventManagementAccess(
@@ -178,7 +256,10 @@ export class EventsService {
       throw new BadRequestException('endDate must be after startDate');
     }
 
-    const data: Prisma.EventUncheckedUpdateInput = {};
+    const data: Prisma.EventUncheckedUpdateInput & {
+      price?: number;
+      maxTicketsPerUser?: number;
+    } = {};
 
     if (updateEventDto.title !== undefined) data.title = updateEventDto.title;
     if (updateEventDto.description !== undefined)
@@ -193,15 +274,21 @@ export class EventsService {
       data.endDate = new Date(updateEventDto.endDate);
     if (updateEventDto.capacity !== undefined)
       data.capacity = updateEventDto.capacity;
+    if (updateEventDto.price !== undefined) data.price = updateEventDto.price;
+    if (updateEventDto.maxTicketsPerUser !== undefined)
+      data.maxTicketsPerUser = updateEventDto.maxTicketsPerUser;
     if (updateEventDto.status !== undefined)
       data.status = updateEventDto.status;
 
     try {
-      return await this.prisma.event.update({
+      const updatedEvent = await this.prisma.event.update({
         where: { id },
-        data,
+        data: data as Prisma.EventUncheckedUpdateInput,
         include: eventInclude,
       });
+
+      const registeredCount = await this.getActiveTicketCount(id);
+      return this.formatEventWithAvailability(updatedEvent, registeredCount);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
@@ -306,7 +393,8 @@ export class EventsService {
       }
     }
 
-    return updatedEvent;
+    const registeredCount = await this.getActiveTicketCount(id);
+    return this.formatEventWithAvailability(updatedEvent, registeredCount);
   }
 
   async removeCoverImage(id: string, currentUserId: string) {
@@ -331,6 +419,7 @@ export class EventsService {
       }
     }
 
-    return updatedEvent;
+    const registeredCount = await this.getActiveTicketCount(id);
+    return this.formatEventWithAvailability(updatedEvent, registeredCount);
   }
 }

@@ -22,7 +22,7 @@ import type {
   UpdatePermissionCategoryPayload,
   UpdatePermissionPayload,
 } from '../../types/rbac.types.ts';
-import { extractErrorMessage } from '../../utils/error.utils.ts';
+import { extractErrorMessage } from '../../utils';
 import { authSlice } from './authSlice.ts';
 
 const { logout } = authSlice.actions;

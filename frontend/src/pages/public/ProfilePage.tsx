@@ -14,8 +14,7 @@ import {
 import { Button, Card, PageHeader } from "../../components/common";
 import { ROUTES } from "../../constants/routes.ts";
 import { useAppSelector } from "../../hooks/redux.ts";
-import { formatDate } from "../../utils/date.utils.ts";
-import { hasPermission } from "../../utils/permission.utils.ts";
+import { formatDate, hasPermission } from "../../utils";
 
 export function ProfilePage(): ReactElement {
   const { user, isLoading, error } = useAppSelector((state) => state.auth);

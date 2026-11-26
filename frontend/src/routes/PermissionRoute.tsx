@@ -7,7 +7,7 @@ import {
   hasAllPermissions,
   hasAnyPermission,
   hasPermission,
-} from '../utils/permission.utils.ts';
+} from '../utils';
 
 export interface PermissionRouteProps {
   permission?: string;

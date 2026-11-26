@@ -11,8 +11,7 @@ import {
   updateExistingUserStatus,
 } from "../../../store/slices/userSlice.ts";
 import type { UpdateUserPayload, User } from "../../../types/user.types.ts";
-import { extractErrorMessage } from "../../../utils/error.utils.ts";
-import { hasPermission } from "../../../utils/permission.utils.ts";
+import { extractErrorMessage, hasPermission } from "../../../utils";
 import {
   AssignRoleModal,
   UserFormModal,

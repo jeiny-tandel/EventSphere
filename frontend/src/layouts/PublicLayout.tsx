@@ -12,7 +12,7 @@ import { ROUTES } from "../constants/routes.ts";
 import { PUBLIC_NAV_ITEMS } from "../constants/navigation.ts";
 import { useAppDispatch, useAppSelector } from "../hooks/redux.ts";
 import { logoutUser } from "../store/slices/authSlice.ts";
-import { hasPermission } from "../utils/permission.utils.ts";
+import { hasPermission } from "../utils";
 
 export function PublicLayout(): ReactElement {
   const dispatch = useAppDispatch();
@@ -189,34 +189,83 @@ export function PublicLayout(): ReactElement {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-dim-grey-200 bg-white py-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-            <div className="text-center md:text-left">
-              <span className="text-lg font-bold tracking-tight text-peach-fuzz-500 uppercase">
-                EventSphere
-              </span>
-              <p className="mt-1 max-w-sm text-sm text-dim-grey-600">
-                A modern event and workshop management platform to discover,
-                host, and celebrate experiences.
+      <footer className="border-t border-dim-grey-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            {/* Brand & Compact Tagline */}
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+              <Link to={ROUTES.HOME} className="inline-flex items-center">
+                <span className="text-base font-extrabold tracking-tight text-peach-fuzz-500 uppercase">
+                  EventSphere
+                </span>
+              </Link>
+              <span className="hidden text-dim-grey-300 sm:inline">•</span>
+              <p className="text-xs text-dim-grey-500">
+                Discover, book, and manage events effortlessly.
               </p>
             </div>
 
-            {/* Footer Navigation Links */}
-            <div className="flex items-center gap-6 text-sm text-dim-grey-600">
-              {PUBLIC_NAV_ITEMS.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className="transition-colors hover:text-peach-fuzz-500"
-                >
-                  {item.label}
-                </Link>
-              ))}
+            {/* Compact Explore & Account Links */}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-dim-grey-600">
+              <div className="flex items-center gap-4">
+                {PUBLIC_NAV_ITEMS.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className="transition-colors hover:text-peach-fuzz-500"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
+              <span className="text-dim-grey-300">|</span>
+
+              <div className="flex items-center gap-4">
+                {isAuthenticated ? (
+                  <>
+                    <Link
+                      to={ROUTES.MY_REGISTRATIONS}
+                      className="transition-colors hover:text-peach-fuzz-500"
+                    >
+                      My Registrations
+                    </Link>
+                    <Link
+                      to={ROUTES.PROFILE}
+                      className="transition-colors hover:text-peach-fuzz-500"
+                    >
+                      My Profile
+                    </Link>
+                    {hasDashboardAccess && (
+                      <Link
+                        to={ROUTES.DASHBOARD}
+                        className="transition-colors hover:text-peach-fuzz-500"
+                      >
+                        Dashboard
+                      </Link>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to={ROUTES.LOGIN}
+                      className="transition-colors hover:text-peach-fuzz-500"
+                    >
+                      Log in
+                    </Link>
+                    <Link
+                      to={ROUTES.REGISTER}
+                      className="transition-colors hover:text-peach-fuzz-500"
+                    >
+                      Register
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="mt-8 border-t border-dim-grey-100 pt-6 text-center text-xs text-dim-grey-500">
+          <div className="mt-4 border-t border-dim-grey-100 pt-3 text-center text-[11px] text-dim-grey-400">
             &copy; {new Date().getFullYear()} EventSphere. All rights reserved.
           </div>
         </div>

@@ -21,7 +21,7 @@ import type {
   RoleResponse,
   UpdateRolePayload,
 } from "../../types/rbac.types.ts";
-import { extractErrorMessage } from "../../utils/error.utils.ts";
+import { extractErrorMessage } from "../../utils";
 import { authSlice } from "./authSlice.ts";
 import { updateExistingPermission } from "./permissionSlice.ts";
 

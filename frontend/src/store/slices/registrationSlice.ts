@@ -5,24 +5,38 @@ import {
 } from '@reduxjs/toolkit';
 import {
   cancelRegistration,
+  getManagementRegistrations,
   getMyRegistrations,
   registerForEvent,
+  updateRegistrationStatus,
 } from '../../api/registrations.api.ts';
-import type { EventRegistration } from '../../types/registration.types.ts';
-import { extractErrorMessage } from '../../utils/error.utils.ts';
+import type {
+  EventRegistration,
+  ManagementEventRegistration,
+  RegistrationStatus,
+} from '../../types/registration.types.ts';
+import { extractErrorMessage } from '../../utils';
 import { authSlice } from './authSlice.ts';
 
 const { logout } = authSlice.actions;
 
 export interface RegistrationState {
   registrations: EventRegistration[];
+  managementRegistrations: ManagementEventRegistration[];
   loading: boolean;
+  managementLoading: boolean;
+  isManagementLoaded: boolean;
+  isUpdatingStatus: boolean;
   error: string | null;
 }
 
 const initialState: RegistrationState = {
   registrations: [],
+  managementRegistrations: [],
   loading: false,
+  managementLoading: false,
+  isManagementLoaded: false,
+  isUpdatingStatus: false,
   error: null,
 };
 
@@ -41,13 +55,20 @@ export const fetchMyRegistrations = createAsyncThunk<
   }
 });
 
+export type RegisterForEventInput =
+  | string
+  | { eventId: string; quantity?: number };
+
 export const registerForEventThunk = createAsyncThunk<
   EventRegistration,
-  string,
+  RegisterForEventInput,
   { rejectValue: string }
->('registrations/registerForEvent', async (eventId, { rejectWithValue }) => {
+>('registrations/registerForEvent', async (input, { rejectWithValue }) => {
+  const eventId = typeof input === 'string' ? input : input.eventId;
+  const quantity = typeof input === 'string' ? 1 : (input.quantity ?? 1);
+
   try {
-    return await registerForEvent(eventId);
+    return await registerForEvent(eventId, quantity);
   } catch (error) {
     return rejectWithValue(
       extractErrorMessage(error, 'Failed to register for event.'),
@@ -68,6 +89,37 @@ export const cancelRegistrationThunk = createAsyncThunk<
     );
   }
 });
+
+export const fetchManagementRegistrations = createAsyncThunk<
+  ManagementEventRegistration[],
+  void,
+  { rejectValue: string }
+>('registrations/fetchManagementRegistrations', async (_, { rejectWithValue }) => {
+  try {
+    return await getManagementRegistrations();
+  } catch (error) {
+    return rejectWithValue(
+      extractErrorMessage(error, 'Failed to fetch management registrations.'),
+    );
+  }
+});
+
+export const updateRegistrationStatusThunk = createAsyncThunk<
+  ManagementEventRegistration,
+  { id: string; status: RegistrationStatus },
+  { rejectValue: string }
+>(
+  'registrations/updateRegistrationStatus',
+  async ({ id, status }, { rejectWithValue }) => {
+    try {
+      return await updateRegistrationStatus(id, status);
+    } catch (error) {
+      return rejectWithValue(
+        extractErrorMessage(error, 'Failed to update registration status.'),
+      );
+    }
+  },
+);
 
 // Registration Slice
 export const registrationSlice = createSlice({
@@ -135,6 +187,50 @@ export const registrationSlice = createSlice({
       .addCase(cancelRegistrationThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload ?? 'Failed to cancel registration.';
+      });
+
+    // fetchManagementRegistrations
+    builder
+      .addCase(fetchManagementRegistrations.pending, (state) => {
+        state.managementLoading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchManagementRegistrations.fulfilled,
+        (state, action: PayloadAction<ManagementEventRegistration[]>) => {
+          state.managementLoading = false;
+          state.isManagementLoaded = true;
+          state.managementRegistrations = action.payload;
+        },
+      )
+      .addCase(fetchManagementRegistrations.rejected, (state, action) => {
+        state.managementLoading = false;
+        state.error =
+          action.payload ?? 'Failed to fetch management registrations.';
+      });
+
+    // updateRegistrationStatusThunk
+    builder
+      .addCase(updateRegistrationStatusThunk.pending, (state) => {
+        state.isUpdatingStatus = true;
+        state.error = null;
+      })
+      .addCase(
+        updateRegistrationStatusThunk.fulfilled,
+        (state, action: PayloadAction<ManagementEventRegistration>) => {
+          state.isUpdatingStatus = false;
+          state.managementRegistrations = state.managementRegistrations.map(
+            (registration) =>
+              registration.id === action.payload.id
+                ? action.payload
+                : registration,
+          );
+        },
+      )
+      .addCase(updateRegistrationStatusThunk.rejected, (state, action) => {
+        state.isUpdatingStatus = false;
+        state.error =
+          action.payload ?? 'Failed to update registration status.';
       });
 
     // reset state on logout

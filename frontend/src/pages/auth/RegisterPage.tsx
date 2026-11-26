@@ -7,7 +7,7 @@ import { Button, Card, Input } from "../../components/common";
 import { ROUTES } from "../../constants/routes.ts";
 import { registerValidationSchema } from "../../schemas/auth.schema.ts";
 import type { RegisterFormData, RegisterPayload } from "../../types";
-import { extractErrorMessage } from "../../utils/error.utils.ts";
+import { extractErrorMessage } from "../../utils";
 
 export function RegisterPage(): ReactElement {
   const navigate = useNavigate();

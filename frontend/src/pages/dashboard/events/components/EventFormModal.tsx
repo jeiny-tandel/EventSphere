@@ -24,8 +24,7 @@ import type {
   CreateEventPayload,
   Event,
 } from "../../../../types/event.types.ts";
-import { extractErrorMessage } from "../../../../utils/error.utils.ts";
-import { getEventCoverImageUrl } from "../../../../utils/event-image.utils.ts";
+import { extractErrorMessage, getEventCoverImageUrl } from "../../../../utils";
 
 export interface EventFormModalProps {
   open: boolean;
@@ -41,6 +40,8 @@ const defaultInitialValues: CreateEventFormValues = {
   startDate: "",
   endDate: "",
   capacity: undefined,
+  price: 0,
+  maxTicketsPerUser: 5,
   status: "DRAFT",
 };
 
@@ -155,6 +156,9 @@ function EventFormModalContent({
     startDate: event?.startDate ?? defaultInitialValues.startDate,
     endDate: event?.endDate ?? defaultInitialValues.endDate,
     capacity: event?.capacity ?? defaultInitialValues.capacity,
+    price: event?.price ?? defaultInitialValues.price,
+    maxTicketsPerUser:
+      event?.maxTicketsPerUser ?? defaultInitialValues.maxTicketsPerUser,
     status: event?.status ?? defaultInitialValues.status,
   };
 
@@ -175,6 +179,11 @@ function EventFormModalContent({
           startDate: new Date(values.startDate).toISOString(),
           endDate: new Date(values.endDate).toISOString(),
           capacity: values.capacity ? Number(values.capacity) : undefined,
+          price: values.price !== undefined ? Number(values.price) : 0,
+          maxTicketsPerUser:
+            values.maxTicketsPerUser !== undefined
+              ? Number(values.maxTicketsPerUser)
+              : 5,
           status: values.status,
         };
 
@@ -579,6 +588,81 @@ function EventFormModalContent({
               {formik.errors.status}
             </span>
           )}
+        </div>
+      </div>
+
+      {/* Ticket Price & Max Tickets Per User */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="event-price"
+            className="text-sm font-medium text-dim-grey-800"
+          >
+            Ticket Price (INR)
+          </label>
+          <InputNumber
+            id="event-price"
+            min={0}
+            step={0.5}
+            precision={2}
+            placeholder="0.00"
+            value={formik.values.price ?? 0}
+            onChange={(val) => formik.setFieldValue("price", val ?? 0)}
+            onBlur={() => formik.setFieldTouched("price", true)}
+            status={
+              formik.touched.price && formik.errors.price
+                ? "error"
+                : undefined
+            }
+            disabled={submitting}
+            className="w-full"
+          />
+          <span className="text-[11px] text-dim-grey-500">
+            Enter 0 for a free event.
+          </span>
+          {formik.touched.price && formik.errors.price && (
+            <span className="text-xs text-powder-blush-500">
+              {formik.errors.price}
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="event-max-tickets"
+            className="text-sm font-medium text-dim-grey-800"
+          >
+            Max Tickets Per User
+            <span className="ml-1 text-powder-blush-500">*</span>
+          </label>
+          <InputNumber
+            id="event-max-tickets"
+            min={1}
+            precision={0}
+            placeholder="5"
+            value={formik.values.maxTicketsPerUser ?? 5}
+            onChange={(val) =>
+              formik.setFieldValue("maxTicketsPerUser", val ?? 5)
+            }
+            onBlur={() => formik.setFieldTouched("maxTicketsPerUser", true)}
+            status={
+              formik.touched.maxTicketsPerUser &&
+              formik.errors.maxTicketsPerUser
+                ? "error"
+                : undefined
+            }
+            disabled={submitting}
+            className="w-full"
+          />
+          <span className="text-[11px] text-dim-grey-500">
+            Maximum tickets one user can book per registration.
+          </span>
+          {formik.touched.maxTicketsPerUser &&
+            formik.errors.maxTicketsPerUser && (
+              <span className="text-xs text-powder-blush-500">
+                {formik.errors.maxTicketsPerUser}
+              </span>
+            )}
         </div>
       </div>
 

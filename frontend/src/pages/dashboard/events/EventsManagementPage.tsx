@@ -9,7 +9,9 @@ import {
   PlusOutlined,
 } from "@ant-design/icons";
 import { Button, Card, PageHeader } from "../../../components/common";
+import { EventFilterBar } from "../../../components/events/EventFilterBar.tsx";
 import { useAppDispatch, useAppSelector } from "../../../hooks/redux.ts";
+import { useEventFilters } from "../../../hooks/useEventFilters.ts";
 import {
   deleteEvent,
   deleteEventCategory,
@@ -22,10 +24,12 @@ import type {
   EventStatus,
 } from "../../../types/event.types.ts";
 import { isAdminUser } from "../../../constants/roles.ts";
-import { formatDate } from "../../../utils/date.utils.ts";
-import { extractErrorMessage } from "../../../utils/error.utils.ts";
-import { getEventCoverImageUrl } from "../../../utils/event-image.utils.ts";
-import { hasPermission } from "../../../utils/permission.utils.ts";
+import {
+  extractErrorMessage,
+  formatDate,
+  getEventCoverImageUrl,
+  hasPermission,
+} from "../../../utils";
 import { CategoryFormModal, EventFormModal } from "./components";
 
 const STATUS_CONFIG: Record<EventStatus, { color: string; label: string }> = {
@@ -68,14 +72,18 @@ export function EventsManagementPage(): ReactElement {
   }, [dispatch, isManagementLoaded]);
 
   useEffect(() => {
-    if (
-      activeTab === "categories" &&
-      !areCategoriesLoaded &&
-      !isCategoriesLoading
-    ) {
+    if (!areCategoriesLoaded && !isCategoriesLoading) {
       dispatch(fetchEventCategories());
     }
-  }, [activeTab, areCategoriesLoaded, isCategoriesLoading, dispatch]);
+  }, [areCategoriesLoaded, isCategoriesLoading, dispatch]);
+
+  const {
+    filters,
+    filteredEvents,
+    hasActiveFilters,
+    updateFilter,
+    resetFilters,
+  } = useEventFilters(managementEvents);
 
   const handleTabChange = (key: string) => {
     setActiveTab(key);
@@ -447,35 +455,60 @@ export function EventsManagementPage(): ReactElement {
             key: "events",
             label: "Events",
             children: (
-              <Card
-                className="rounded-xl border border-dim-grey-200 bg-white shadow-xs"
-                bodyClassName="!p-0"
-              >
-                <Table<Event>
-                  rowKey="id"
-                  columns={columns}
-                  dataSource={managementEvents}
-                  loading={isManagementLoading}
-                  scroll={{ x: 800 }}
-                  pagination={{
-                    pageSize: 10,
-                    showSizeChanger: true,
-                    responsive: true,
-                  }}
-                  locale={{
-                    emptyText: (
-                      <Empty
-                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                        description={
-                          <span className="text-sm text-dim-grey-500">
-                            No events found.
-                          </span>
-                        }
-                      />
-                    ),
-                  }}
+              <div className="space-y-4">
+                <EventFilterBar
+                  filters={filters}
+                  categories={categories}
+                  onFilterChange={updateFilter}
+                  onReset={resetFilters}
+                  hasActiveFilters={hasActiveFilters}
+                  showStatusFilter
+                  loadingCategories={isCategoriesLoading}
                 />
-              </Card>
+
+                <Card
+                  className="rounded-xl border border-dim-grey-200 bg-white shadow-xs"
+                  bodyClassName="!p-0"
+                >
+                  <Table<Event>
+                    rowKey="id"
+                    columns={columns}
+                    dataSource={filteredEvents}
+                    loading={isManagementLoading}
+                    scroll={{ x: 800 }}
+                    pagination={{
+                      pageSize: 10,
+                      showSizeChanger: true,
+                      responsive: true,
+                    }}
+                    locale={{
+                      emptyText: (
+                        <Empty
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                          description={
+                            <div className="space-y-2">
+                              <span className="block text-sm text-dim-grey-500">
+                                {hasActiveFilters
+                                  ? "No events match the selected filters."
+                                  : "No events found."}
+                              </span>
+                              {hasActiveFilters && (
+                                <Button
+                                  type="default"
+                                  className="text-xs!"
+                                  onClick={resetFilters}
+                                >
+                                  Clear Filters
+                                </Button>
+                              )}
+                            </div>
+                          }
+                        />
+                      ),
+                    }}
+                  />
+                </Card>
+              </div>
             ),
           },
           {

@@ -25,6 +25,11 @@ export interface Event {
   startDate: string;
   endDate: string;
   capacity: number | null;
+  price: number;
+  maxTicketsPerUser: number;
+  registeredCount: number;
+  remainingSeats: number | null;
+  isSoldOut: boolean;
   coverImage: string | null;
   status: EventStatus;
   createdAt: string;
@@ -41,6 +46,8 @@ export interface CreateEventPayload {
   startDate: string;
   endDate: string;
   capacity?: number;
+  price?: number;
+  maxTicketsPerUser?: number;
   status?: EventStatus;
 }
 
@@ -52,6 +59,8 @@ export interface UpdateEventPayload {
   startDate?: string;
   endDate?: string;
   capacity?: number;
+  price?: number;
+  maxTicketsPerUser?: number;
   status?: EventStatus;
 }
 

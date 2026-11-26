@@ -8,6 +8,7 @@ import { PermissionsModule } from './modules/permissions/permissions.module.js';
 import { RolesModule } from './modules/roles/roles.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { RegistrationsModule } from './modules/registrations/registrations.module.js';
+import { DashboardModule } from './modules/dashboard/dashboard.module.js';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RegistrationsModule } from './modules/registrations/registrations.modul
     RolesModule,
     EventsModule,
     RegistrationsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

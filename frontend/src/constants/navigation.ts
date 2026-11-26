@@ -4,6 +4,7 @@ import {
   CalendarOutlined,
   KeyOutlined,
   SafetyCertificateOutlined,
+  SolutionOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
 import { ROUTES } from './routes.ts';
@@ -41,6 +42,13 @@ export const DASHBOARD_NAV_ITEMS: DashboardNavItem[] = [
     path: ROUTES.EVENTS_MANAGEMENT,
     icon: createElement(CalendarOutlined, { className: 'text-base' }),
     requiredPermission: 'events.view',
+  },
+  {
+    key: 'registrations',
+    label: 'Registrations',
+    path: ROUTES.REGISTRATIONS_MANAGEMENT,
+    icon: createElement(SolutionOutlined, { className: 'text-base' }),
+    requiredPermission: 'registrations.view',
   },
   {
     key: 'users',

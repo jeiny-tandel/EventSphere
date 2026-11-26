@@ -7,8 +7,10 @@ export const ROUTES = {
   ROLES: '/dashboard/roles',
   PERMISSIONS: '/dashboard/permissions',
   EVENTS_MANAGEMENT: '/dashboard/events',
+  REGISTRATIONS_MANAGEMENT: '/dashboard/registrations',
   MY_REGISTRATIONS: '/my-registrations',
   PROFILE: '/profile',
   EVENTS: '/events',
+  EVENT_DETAILS: '/events/:id',
   ABOUT: '/about',
 } as const;

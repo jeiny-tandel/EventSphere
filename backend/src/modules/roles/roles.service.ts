@@ -202,7 +202,7 @@ export class RolesService {
         where: {
           id: { in: uniquePermissionIds },
         },
-        select: { id: true, name: true, isSystem: true },
+        select: { id: true },
       });
 
       if (existingPermissions.length !== uniquePermissionIds.length) {
@@ -213,18 +213,6 @@ export class RolesService {
         throw new NotFoundException(
           `The following permission ID(s) do not exist: ${missingIds.join(', ')}`,
         );
-      }
-
-      if (role.isSystem) {
-        const systemPermissions = existingPermissions.filter((p) => p.isSystem);
-        if (systemPermissions.length > 0) {
-          const prohibitedNames = systemPermissions
-            .map((p) => `'${p.name}'`)
-            .join(', ');
-          throw new ForbiddenException(
-            `Cannot remove system permission(s) from system role '${role.name}': ${prohibitedNames}`,
-          );
-        }
       }
 
       await tx.rolePermission.deleteMany({

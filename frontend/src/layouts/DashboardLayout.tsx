@@ -7,7 +7,7 @@ import { DASHBOARD_NAV_ITEMS } from "../constants/navigation.ts";
 import { ROUTES } from "../constants/routes.ts";
 import { useAppDispatch, useAppSelector } from "../hooks/redux.ts";
 import { logoutUser } from "../store/slices/authSlice.ts";
-import { hasPermission } from "../utils/permission.utils.ts";
+import { hasPermission } from "../utils";
 
 export function DashboardLayout(): ReactElement {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);

@@ -7,11 +7,11 @@ import { isAxiosError } from 'axios';
 import { getProfile, loginUser } from '../../api';
 import type { AuthResponse, LoginCredentials, UserProfile } from '../../types';
 import {
+  extractErrorMessage,
   getAccessToken,
   removeAccessToken,
   setAccessToken,
-} from '../../utils/token.utils.ts';
-import { extractErrorMessage } from '../../utils/error.utils.ts';
+} from '../../utils';
 
 export interface AuthState {
   user: UserProfile | null;

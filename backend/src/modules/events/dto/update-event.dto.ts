@@ -2,10 +2,12 @@ import {
   IsDateString,
   IsEnum,
   IsInt,
+  IsNumber,
   IsOptional,
   IsPositive,
   IsString,
   IsUUID,
+  Min,
 } from 'class-validator';
 import { EventStatus } from './create-event.dto.js';
 
@@ -38,6 +40,16 @@ export class UpdateEventDto {
   @IsInt()
   @IsPositive()
   capacity?: number;
+
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  price?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  maxTicketsPerUser?: number;
 
   @IsOptional()
   @IsEnum(EventStatus)

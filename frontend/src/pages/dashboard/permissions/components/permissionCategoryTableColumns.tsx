@@ -3,7 +3,7 @@ import { Space, Tag, Tooltip } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Button } from '../../../../components/common';
 import type { PermissionCategory } from '../../../../types/rbac.types.ts';
-import { formatDate } from '../../../../utils/date.utils.ts';
+import { formatDate } from '../../../../utils';
 
 export interface PermissionCategoryTableActionCallbacks {
   onEdit: (category: PermissionCategory) => void;

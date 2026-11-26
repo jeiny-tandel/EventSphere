@@ -8,11 +8,13 @@ import { RegisterPage } from '../pages/auth/RegisterPage.tsx';
 import { DashboardOverviewPage } from '../pages/dashboard/DashboardOverviewPage.tsx';
 import { EventsManagementPage } from '../pages/dashboard/events/EventsManagementPage.tsx';
 import { MyRegistrationsPage } from '../pages/dashboard/registrations/MyRegistrationsPage.tsx';
+import { RegistrationsManagementPage } from '../pages/dashboard/registrations/RegistrationsManagementPage.tsx';
 import { UsersPage } from '../pages/dashboard/users/UsersPage.tsx';
 import { RolesPage } from '../pages/dashboard/roles/RolesPage.tsx';
 import { PermissionsPage } from '../pages/dashboard/permissions/PermissionsPage.tsx';
 import { NotFoundPage } from '../pages/NotFoundPage.tsx';
 import { AboutPage } from '../pages/public/AboutPage.tsx';
+import { EventDetailsPage } from '../pages/public/EventDetailsPage.tsx';
 import { EventsPage } from '../pages/public/EventsPage.tsx';
 import { HomePage } from '../pages/public/HomePage.tsx';
 import { ProfilePage } from '../pages/public/ProfilePage.tsx';
@@ -28,6 +30,7 @@ export function AppRouter(): ReactElement {
         <Route element={<PublicLayout />}>
           <Route path={ROUTES.HOME} element={<HomePage />} />
           <Route path={ROUTES.EVENTS} element={<EventsPage />} />
+          <Route path={ROUTES.EVENT_DETAILS} element={<EventDetailsPage />} />
           <Route path={ROUTES.ABOUT} element={<AboutPage />} />
 
           {/* Authenticated Attendee Routes */}
@@ -62,6 +65,20 @@ export function AppRouter(): ReactElement {
               <Route
                 path={ROUTES.EVENTS_MANAGEMENT}
                 element={<EventsManagementPage />}
+              />
+            </Route>
+
+            <Route
+              element={
+                <PermissionRoute
+                  permission="registrations.view"
+                  fallbackPath={ROUTES.DASHBOARD}
+                />
+              }
+            >
+              <Route
+                path={ROUTES.REGISTRATIONS_MANAGEMENT}
+                element={<RegistrationsManagementPage />}
               />
             </Route>
 

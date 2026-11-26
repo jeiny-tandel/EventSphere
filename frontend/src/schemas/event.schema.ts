@@ -9,6 +9,8 @@ export interface CreateEventFormValues {
   startDate: string;
   endDate: string;
   capacity?: number;
+  price: number;
+  maxTicketsPerUser: number;
   status: EventStatus;
 }
 
@@ -67,6 +69,29 @@ export const eventValidationSchema = Yup.object({
     .positive('Capacity must be a positive integer')
     .integer('Capacity must be an integer')
     .optional(),
+  price: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === '' || originalValue === null || originalValue === undefined
+        ? 0
+        : Number(value),
+    )
+    .min(0, 'Ticket price must be 0 or greater')
+    .test(
+      'max-two-decimals',
+      'Ticket price can have at most two decimal places',
+      (value) =>
+        value === undefined || /^\d+(\.\d{1,2})?$/.test(String(value)),
+    )
+    .required('Ticket price is required'),
+  maxTicketsPerUser: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === '' || originalValue === null || originalValue === undefined
+        ? 5
+        : Number(value),
+    )
+    .integer('Maximum tickets per user must be an integer')
+    .min(1, 'Maximum tickets per user must be at least 1')
+    .required('Maximum tickets per user is required'),
   status: Yup.string<EventStatus>()
     .oneOf(
       ['DRAFT', 'PUBLISHED', 'CANCELLED', 'COMPLETED'],

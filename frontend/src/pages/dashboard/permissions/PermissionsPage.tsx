@@ -21,8 +21,7 @@ import type {
   UpdatePermissionCategoryPayload,
   UpdatePermissionPayload,
 } from "../../../types/rbac.types.ts";
-import { extractErrorMessage } from "../../../utils/error.utils.ts";
-import { hasPermission } from "../../../utils/permission.utils.ts";
+import { extractErrorMessage, hasPermission } from "../../../utils";
 import {
   PermissionCategoryFormModal,
   PermissionFormModal,

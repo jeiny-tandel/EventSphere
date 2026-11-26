@@ -16,7 +16,7 @@ import type {
   EventCategory,
   UpdateEventCategoryPayload,
 } from '../../../../types/event.types.ts';
-import { extractErrorMessage } from '../../../../utils/error.utils.ts';
+import { extractErrorMessage } from '../../../../utils';
 
 export interface CategoryFormModalProps {
   open: boolean;

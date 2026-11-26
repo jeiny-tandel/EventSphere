@@ -1,6 +1,5 @@
 import {
   ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -78,17 +77,7 @@ export class PermissionsService {
   }
 
   async update(id: string, updatePermissionDto: UpdatePermissionDto) {
-    const permission = await this.findOne(id);
-
-    if (
-      permission.isSystem &&
-      updatePermissionDto.name !== undefined &&
-      updatePermissionDto.name.trim() !== permission.name.trim()
-    ) {
-      throw new ForbiddenException(
-        `System permission '${permission.name}' cannot be renamed`,
-      );
-    }
+    await this.findOne(id);
 
     if (updatePermissionDto.categoryId !== undefined) {
       const category = await this.prisma.permissionCategory.findUnique({
@@ -148,13 +137,7 @@ export class PermissionsService {
   }
 
   async remove(id: string) {
-    const permission = await this.findOne(id);
-
-    if (permission.isSystem) {
-      throw new ForbiddenException(
-        `System permission '${permission.name}' cannot be deleted`,
-      );
-    }
+    await this.findOne(id);
 
     try {
       return await this.prisma.permission.delete({
